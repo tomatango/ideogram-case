@@ -457,8 +457,8 @@
 
 <script>
   const MODEL = 'gemini-3.1-flash-image-preview';
-  const BUILT_IN_KEY = '%%GEMINI_API_KEY%%';
   const IS_LOCAL = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+  const API_URL = IS_LOCAL ? '/api/generate' : 'https://ideogram-case.vercel.app/api/generate';
   if (IS_LOCAL) document.getElementById('localApiBar').style.display = 'flex';
 
   let logoData  = null;
@@ -617,8 +617,8 @@
       const body = JSON.stringify({ parts, ...(localKey && { apiKey: localKey }) });
 
       const [res1, res2] = await Promise.all([
-        fetch('/api/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body }),
-        fetch('/api/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body })
+        fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body }),
+        fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body })
       ]);
 
       const [data1, data2] = await Promise.all([res1.json(), res2.json()]);
