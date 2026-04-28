@@ -174,6 +174,43 @@
     .refs-add input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
     .refs-add small { font-size: 0.6rem; color: #b0bdd8; }
 
+    /* Local API key banner */
+    .local-api-bar {
+      background: #fffbea;
+      border: 1px solid #f0d070;
+      border-radius: 14px;
+      padding: 14px 20px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .local-api-bar label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #92700a;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      white-space: nowrap;
+      margin: 0;
+    }
+
+    .local-api-bar input {
+      flex: 1;
+      background: #fff;
+      border: 1px solid #e8d080;
+      border-radius: 8px;
+      color: #1e2a3a;
+      font-size: 0.875rem;
+      padding: 8px 12px;
+      outline: none;
+      font-family: monospace;
+      transition: border-color 0.2s;
+    }
+
+    .local-api-bar input:focus { border-color: #c8a020; }
+
     /* Prompt card */
     .prompt-card { margin-bottom: 16px; }
 
@@ -338,6 +375,12 @@
 
   <h1>AI Image Generator</h1>
 
+  <!-- Local dev API key bar (localhost only) -->
+  <div class="local-api-bar" id="localApiBar" style="display:none">
+    <label>API Key</label>
+    <input type="password" id="localApiKey" placeholder="Paste your Gemini API key for local testing..." />
+  </div>
+
   <!-- Upload row -->
   <div class="upload-row">
 
@@ -414,6 +457,9 @@
 
 <script>
   const MODEL = 'gemini-3.1-flash-image-preview';
+  const BUILT_IN_KEY = '%%GEMINI_API_KEY%%';
+  const IS_LOCAL = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+  if (IS_LOCAL) document.getElementById('localApiBar').style.display = 'flex';
 
   let logoData  = null;
   let refImages = [];
@@ -548,18 +594,27 @@
       const parts = [];
 
       if (logoData) {
-        parts.push({ text: 'Logo to incorporate:' });
+        parts.push({ text: 'The following is the brand logo. Use it exactly as-is in the output — do not alter, redesign, or stylize it. Place it naturally on products or within the scene as appropriate:' });
         parts.push({ inlineData: { mimeType: logoData.mimeType, data: logoData.data } });
       }
 
       if (refImages.length > 0) {
-        parts.push({ text: 'Reference images:' });
+        parts.push({ text: 'The following image(s) are stylistic references only. Use them for ideation — draw inspiration from their mood, color palette, composition, and aesthetic, but do not copy them directly:' });
         refImages.forEach(img => parts.push({ inlineData: { mimeType: img.mimeType, data: img.data } }));
       }
 
-      parts.push({ text: prompt });
+      const augmentedPrompt = (logoData || refImages.length > 0)
+        ? [
+            prompt,
+            logoData ? 'Incorporate the provided logo faithfully and prominently into the image as it would appear on real products or in the scene.' : '',
+            refImages.length > 0 ? 'Use the reference images as stylistic inspiration for the overall look and feel.' : '',
+          ].filter(Boolean).join(' ')
+        : prompt;
 
-      const body = JSON.stringify({ parts });
+      parts.push({ text: augmentedPrompt });
+
+      const localKey = IS_LOCAL ? document.getElementById('localApiKey').value.trim() : null;
+      const body = JSON.stringify({ parts, ...(localKey && { apiKey: localKey }) });
 
       const [res1, res2] = await Promise.all([
         fetch('/api/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body }),
