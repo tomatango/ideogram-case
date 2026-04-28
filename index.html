@@ -141,10 +141,15 @@
       min-height: 110px;
       flex-direction: row;
       flex-wrap: wrap;
-      justify-content: flex-start;
-      align-items: flex-start;
+      justify-content: center;
+      align-items: center;
       gap: 8px;
       padding: 12px;
+    }
+
+    .refs-zone.has-images {
+      justify-content: flex-start;
+      align-items: flex-start;
     }
 
     .ref-thumb {
@@ -244,8 +249,14 @@
     .prompt-card textarea:focus { border-color: #6b82c8; }
 
     /* Buttons */
+    .btn-create-wrap {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 32px;
+    }
+
     .btn-create {
-      width: 100%;
+      width: 50%;
       padding: 15px;
       background: #7b8fd6;
       color: #fff;
@@ -255,7 +266,6 @@
       font-weight: 500;
       cursor: pointer;
       transition: background 0.2s, opacity 0.2s;
-      margin-bottom: 32px;
     }
 
     .btn-create:hover:not(:disabled) { background: #6b7fc6; }
@@ -404,7 +414,7 @@
 <body>
 <div class="max-width">
 
-  <h1>AI Image Generator</h1>
+  <h1>Ideogram - Campaign Ideator</h1>
 
   <!-- Local dev API key bar (localhost only) -->
   <div class="local-api-bar" id="localApiBar" style="display:none">
@@ -444,14 +454,16 @@
   <!-- Prompt card -->
   <div class="card prompt-card">
     <div class="card-label">What kind of campaign would you like to make?</div>
-    <textarea id="prompt" placeholder="Describe the images you want to generate..."></textarea>
+    <textarea id="prompt" placeholder="e.g.&#10;• Product shot of a new summer drink&#10;• Lifestyle photo for a back-to-school post&#10;• In-packaging shot of product on a shelf"></textarea>
   </div>
 
   <!-- Error -->
   <div class="error" id="error"></div>
 
   <!-- Create button -->
-  <button class="btn-create" id="createBtn" onclick="generate()">Create Images</button>
+  <div class="btn-create-wrap">
+    <button class="btn-create" id="createBtn" onclick="generate()">Create Images</button>
+  </div>
 
   <!-- Output section -->
   <div class="section-title">Generated Images (2 variations)</div>
@@ -485,9 +497,11 @@
   <button class="btn-regen" id="regenBtn" onclick="generate()" disabled>Regenerate</button>
 
   <!-- History -->
-  <div id="historySection" style="display:none">
+  <div id="historySection">
     <div class="section-title" style="margin-top:40px">History</div>
-    <div id="historyList"></div>
+    <div id="historyList">
+      <p style="color:#b0bdd8;font-size:0.85rem;margin-top:8px">Previously generated images will appear here after you regenerate.</p>
+    </div>
   </div>
 
 </div>
@@ -601,6 +615,7 @@
     const count = refImages.length;
 
     if (count === 0) {
+      zone.classList.remove('has-images');
       zone.innerHTML = `
         <div class="dz-icon" style="display:flex;flex-direction:column;align-items:center;gap:6px;pointer-events:none">
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#9aaac8" stroke-width="1.5">
@@ -611,6 +626,7 @@
           <span class="dz-label">Add images (0/5)</span>
         </div>`;
     } else {
+      zone.classList.add('has-images');
       const thumbs = refImages.map((img, i) => `
         <div class="ref-thumb">
           <img src="data:${img.mimeType};base64,${img.data}" alt="Ref ${i+1}">
