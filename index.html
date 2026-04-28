@@ -94,18 +94,8 @@
       color: #9aaac8;
     }
 
-    /* Upload cards stretch to equal height */
-    .upload-row .card {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .upload-row .card .drop-zone {
-      flex: 1;
-    }
-
     /* Logo zone */
-    .logo-zone { min-height: 130px; }
+    .logo-zone { height: 150px; }
 
     .logo-zone .preview-img {
       width: 100%;
@@ -138,7 +128,7 @@
 
     /* Refs zone */
     .refs-zone {
-      min-height: 110px;
+      height: 150px;
       flex-direction: row;
       flex-wrap: wrap;
       justify-content: center;
@@ -617,13 +607,12 @@
     if (count === 0) {
       zone.classList.remove('has-images');
       zone.innerHTML = `
-        <div class="dz-icon" style="display:flex;flex-direction:column;align-items:center;gap:6px;pointer-events:none">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#9aaac8" stroke-width="1.5">
-            <rect x="3" y="3" width="18" height="18" rx="3"/>
-            <circle cx="8.5" cy="8.5" r="1.5"/>
-            <path d="M21 15l-5-5L5 21"/>
+        <div style="width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;pointer-events:none">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#9aaac8" stroke-width="1.5">
+            <path d="M12 16V4m0 0L8 8m4-4l4 4" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
-          <span class="dz-label">Add images (0/5)</span>
+          <span class="dz-label">Upload images (0/5)</span>
         </div>`;
     } else {
       zone.classList.add('has-images');
