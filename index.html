@@ -94,8 +94,18 @@
       color: #9aaac8;
     }
 
+    /* Upload cards stretch to equal height */
+    .upload-row .card {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .upload-row .card .drop-zone {
+      flex: 1;
+    }
+
     /* Logo zone */
-    .logo-zone { height: 130px; }
+    .logo-zone { min-height: 130px; }
 
     .logo-zone .preview-img {
       width: 100%;
