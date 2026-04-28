@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Image Generator</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #dde4f0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      padding: 40px 24px 60px;
+      color: #1e2a3a;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1e2a3a;
+      margin-bottom: 24px;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 20px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+
+    .card-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #6b82c8;
+      margin-bottom: 12px;
+    }
+
+    /* Upload row */
+    .upload-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    @media (max-width: 560px) {
+      .upload-row { grid-template-columns: 1fr; }
+      .output-grid { grid-template-columns: 1fr; }
+    }
+
+    /* Dashed drop zones */
+    .drop-zone {
+      border: 1.5px dashed #b0bdd8;
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      background: #fff;
+      transition: border-color 0.2s, background 0.2s;
+      gap: 8px;
+      text-align: center;
+      padding: 16px;
+    }
+
+    .drop-zone:hover, .drop-zone.dragover {
+      border-color: #6b82c8;
+      background: #f4f6fc;
+    }
+
+    .drop-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    .dz-icon {
+      color: #9aaac8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .dz-icon svg { width: 28px; height: 28px; }
+
+    .dz-label {
+      font-size: 0.8rem;
+      color: #9aaac8;
+    }
+
+    /* Logo zone */
+    .logo-zone { height: 130px; }
+
+    .logo-zone .preview-img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      position: absolute;
+      inset: 0;
+      padding: 10px;
+    }
+
+    .remove-btn {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      background: rgba(0,0,0,0.45);
+      border: none;
+      color: #fff;
+      border-radius: 50%;
+      width: 22px;
+      height: 22px;
+      font-size: 0.7rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+      padding: 0;
+      line-height: 1;
+    }
+
+    /* Refs zone */
+    .refs-zone {
+      min-height: 110px;
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: flex-start;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 12px;
+    }
+
+    .ref-thumb {
+      width: 72px;
+      height: 72px;
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+      flex-shrink: 0;
+      border: 1px solid #dce4f0;
+    }
+
+    .ref-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+    .ref-thumb .remove-btn { top: 3px; right: 3px; width: 18px; height: 18px; font-size: 0.6rem; }
+
+    .refs-add {
+      width: 72px;
+      height: 72px;
+      border: 1.5px dashed #b0bdd8;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+      flex-shrink: 0;
+      gap: 2px;
+      transition: border-color 0.2s;
+      background: #fff;
+      color: #9aaac8;
+      font-size: 1.2rem;
+    }
+
+    .refs-add:hover { border-color: #6b82c8; }
+    .refs-add input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+    .refs-add small { font-size: 0.6rem; color: #b0bdd8; }
+
+    /* Prompt card */
+    .prompt-card { margin-bottom: 16px; }
+
+    .prompt-card textarea {
+      width: 100%;
+      background: #fff;
+      border: 1px solid #dce4f0;
+      border-radius: 10px;
+      color: #1e2a3a;
+      font-size: 0.9rem;
+      padding: 12px 14px;
+      outline: none;
+      font-family: inherit;
+      resize: vertical;
+      min-height: 110px;
+      transition: border-color 0.2s;
+      line-height: 1.5;
+    }
+
+    .prompt-card textarea::placeholder { color: #b0bdd8; }
+    .prompt-card textarea:focus { border-color: #6b82c8; }
+
+    /* Buttons */
+    .btn-create {
+      width: 100%;
+      padding: 15px;
+      background: #7b8fd6;
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s, opacity 0.2s;
+      margin-bottom: 32px;
+    }
+
+    .btn-create:hover:not(:disabled) { background: #6b7fc6; }
+    .btn-create:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .btn-regen {
+      width: 100%;
+      padding: 15px;
+      background: #7a8ba8;
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s, opacity 0.2s;
+      margin-top: 16px;
+    }
+
+    .btn-regen:hover:not(:disabled) { background: #6a7b98; }
+    .btn-regen:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    /* Output section */
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #1e2a3a;
+      margin-bottom: 16px;
+    }
+
+    .output-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .output-card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .output-inner {
+      width: 100%;
+      height: 100%;
+      border: 1.5px dashed #b0bdd8;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .output-inner img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 8px;
+      display: block;
+    }
+
+    .output-card {
+      position: relative;
+    }
+
+    .download-btn {
+      position: absolute;
+      bottom: 24px;
+      right: 24px;
+      background: rgba(0,0,0,0.55);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 7px 12px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      gap: 5px;
+      backdrop-filter: blur(4px);
+      transition: background 0.2s;
+      font-family: inherit;
+    }
+
+    .download-btn:hover { background: rgba(0,0,0,0.75); }
+    .download-btn svg { width: 13px; height: 13px; flex-shrink: 0; }
+
+    .placeholder-text {
+      font-size: 0.85rem;
+      color: #b0bdd8;
+      text-align: center;
+    }
+
+    .spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid #dce4f0;
+      border-top-color: #7b8fd6;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .error {
+      background: #fff0f0;
+      border: 1px solid #f5c6c6;
+      border-radius: 10px;
+      color: #c0392b;
+      padding: 12px 16px;
+      font-size: 0.85rem;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .max-width { max-width: 900px; margin: 0 auto; }
+  </style>
+</head>
+<body>
+<div class="max-width">
+
+  <h1>AI Image Generator</h1>
+
+  <!-- Upload row -->
+  <div class="upload-row">
+
+    <!-- Logo card -->
+    <div class="card">
+      <div class="card-label">Upload Reference Logo</div>
+      <div class="drop-zone logo-zone" id="logoZone">
+        <input type="file" id="logoInput" accept="image/*" onchange="handleLogo(this)">
+        <div class="dz-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M12 16V4m0 0L8 8m4-4l4 4" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <span class="dz-label">Click to upload logo</span>
+      </div>
+    </div>
+
+    <!-- References card -->
+    <div class="card">
+      <div class="card-label">Upload References Images (Up to 5)</div>
+      <input type="file" id="refsInput" accept="image/*" multiple style="display:none" onchange="handleRefs(this)">
+      <div class="drop-zone refs-zone" id="refsZone" onclick="document.getElementById('refsInput').click()">
+        <!-- rendered by JS -->
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Prompt card -->
+  <div class="card prompt-card">
+    <div class="card-label">What kind of campaign would you like to make?</div>
+    <textarea id="prompt" placeholder="Describe the images you want to generate..."></textarea>
+  </div>
+
+  <!-- Error -->
+  <div class="error" id="error"></div>
+
+  <!-- Create button -->
+  <button class="btn-create" id="createBtn" onclick="generate()">Create Images</button>
+
+  <!-- Output section -->
+  <div class="section-title">Generated Images (2 variations)</div>
+
+  <div class="output-grid">
+    <div class="output-card">
+      <div class="output-inner" id="box1">
+        <span class="placeholder-text">Image 1 will appear here</span>
+      </div>
+      <button class="download-btn" id="dl1">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 4v12m0 0l-4-4m4 4l4-4"/><path d="M4 20h16"/>
+        </svg>
+        Download
+      </button>
+    </div>
+    <div class="output-card">
+      <div class="output-inner" id="box2">
+        <span class="placeholder-text">Image 2 will appear here</span>
+      </div>
+      <button class="download-btn" id="dl2">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 4v12m0 0l-4-4m4 4l4-4"/><path d="M4 20h16"/>
+        </svg>
+        Download
+      </button>
+    </div>
+  </div>
+
+  <!-- Regenerate button -->
+  <button class="btn-regen" id="regenBtn" onclick="generate()" disabled>Regenerate</button>
+
+</div>
+
+<script>
+  const MODEL = 'gemini-3.1-flash-image-preview';
+
+  let logoData  = null;
+  let refImages = [];
+
+  // ── File reading ──────────────────────────────────────────
+  function readFileAsBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const [header, data] = reader.result.split(',');
+        const mimeType = header.match(/:(.*?);/)[1];
+        resolve({ mimeType, data });
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // ── Logo ──────────────────────────────────────────────────
+  async function handleLogo(input) {
+    if (!input.files[0]) return;
+    logoData = await readFileAsBase64(input.files[0]);
+    renderLogo();
+  }
+
+  function renderLogo() {
+    const zone = document.getElementById('logoZone');
+    if (logoData) {
+      zone.innerHTML = `
+        <img class="preview-img" src="data:${logoData.mimeType};base64,${logoData.data}" alt="Logo">
+        <button class="remove-btn" onclick="removeLogo(event)">✕</button>`;
+    } else {
+      zone.innerHTML = `
+        <input type="file" id="logoInput" accept="image/*" onchange="handleLogo(this)">
+        <div class="dz-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M12 16V4m0 0L8 8m4-4l4 4" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <span class="dz-label">Click to upload logo</span>`;
+    }
+  }
+
+  function removeLogo(e) {
+    e.stopPropagation();
+    logoData = null;
+    renderLogo();
+  }
+
+  // ── Reference images ──────────────────────────────────────
+  async function handleRefs(input) {
+    const remaining = 5 - refImages.length;
+    if (remaining <= 0) return;
+    const files = Array.from(input.files).slice(0, remaining);
+    const loaded = await Promise.all(files.map(readFileAsBase64));
+    refImages.push(...loaded);
+    renderRefs();
+    input.value = '';
+  }
+
+  function removeRef(i, e) {
+    e.stopPropagation();
+    refImages.splice(i, 1);
+    renderRefs();
+  }
+
+  function renderRefs() {
+    const zone  = document.getElementById('refsZone');
+    const count = refImages.length;
+
+    if (count === 0) {
+      zone.innerHTML = `
+        <div class="dz-icon" style="display:flex;flex-direction:column;align-items:center;gap:6px;pointer-events:none">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#9aaac8" stroke-width="1.5">
+            <rect x="3" y="3" width="18" height="18" rx="3"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <path d="M21 15l-5-5L5 21"/>
+          </svg>
+          <span class="dz-label">Add images (0/5)</span>
+        </div>`;
+    } else {
+      const thumbs = refImages.map((img, i) => `
+        <div class="ref-thumb">
+          <img src="data:${img.mimeType};base64,${img.data}" alt="Ref ${i+1}">
+          <button class="remove-btn" onclick="removeRef(${i}, event)">✕</button>
+        </div>`).join('');
+
+      const addBtn = count < 5 ? `
+        <div class="refs-add" onclick="event.stopPropagation();document.getElementById('refsInput').click()">
+          <span>+</span>
+          <small>More</small>
+        </div>` : '';
+
+      zone.innerHTML = thumbs + addBtn;
+    }
+  }
+
+  // ── Generation ────────────────────────────────────────────
+  function setLoading(loading) {
+    const createBtn = document.getElementById('createBtn');
+    const regenBtn  = document.getElementById('regenBtn');
+    createBtn.disabled = loading;
+    createBtn.textContent = loading ? 'Generating...' : 'Create Images';
+    regenBtn.disabled = loading;
+
+    if (loading) {
+      ['box1', 'box2'].forEach(id => {
+        document.getElementById(id).innerHTML = '<div class="spinner"></div>';
+      });
+    }
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('error');
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+
+  function clearError() {
+    const el = document.getElementById('error');
+    el.style.display = 'none';
+  }
+
+  async function generate() {
+    const prompt = document.getElementById('prompt').value.trim();
+    clearError();
+    if (!prompt) return showError('Please enter a prompt.');
+    setLoading(true);
+
+    try {
+      const parts = [];
+
+      if (logoData) {
+        parts.push({ text: 'Logo to incorporate:' });
+        parts.push({ inlineData: { mimeType: logoData.mimeType, data: logoData.data } });
+      }
+
+      if (refImages.length > 0) {
+        parts.push({ text: 'Reference images:' });
+        refImages.forEach(img => parts.push({ inlineData: { mimeType: img.mimeType, data: img.data } }));
+      }
+
+      parts.push({ text: prompt });
+
+      const body = JSON.stringify({ parts });
+
+      const [res1, res2] = await Promise.all([
+        fetch('/api/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body }),
+        fetch('/api/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body })
+      ]);
+
+      const [data1, data2] = await Promise.all([res1.json(), res2.json()]);
+
+      if (!res1.ok) throw new Error(data1.error?.message || `API error ${res1.status}`);
+      if (!res2.ok) throw new Error(data2.error?.message || `API error ${res2.status}`);
+
+      const extractImage = (data) => {
+        const parts = data.candidates?.[0]?.content?.parts ?? [];
+        const imgPart = parts.find(p => p.inlineData?.mimeType?.startsWith('image/'));
+        return imgPart ? `data:${imgPart.inlineData.mimeType};base64,${imgPart.inlineData.data}` : null;
+      };
+
+      [data1, data2].forEach((data, i) => {
+        const box = document.getElementById(i === 0 ? 'box1' : 'box2');
+        const dlBtn = document.getElementById(i === 0 ? 'dl1' : 'dl2');
+        const src = extractImage(data);
+        if (src) {
+          const img = document.createElement('img');
+          img.src = src;
+          img.alt = `Generated image ${i + 1}`;
+          box.innerHTML = '';
+          box.appendChild(img);
+          dlBtn.style.display = 'flex';
+          dlBtn.onclick = () => {
+            const a = document.createElement('a');
+            a.href = src;
+            a.download = `generated-image-${i + 1}.png`;
+            a.click();
+          };
+        } else {
+          box.innerHTML = '<span class="placeholder-text">Image not available</span>';
+          dlBtn.style.display = 'none';
+        }
+      });
+
+      document.getElementById('regenBtn').disabled = false;
+
+    } catch (err) {
+      setLoading(false);
+      showError('Error: ' + err.message);
+      return;
+    }
+
+    setLoading(false);
+  }
+
+  document.getElementById('prompt').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) generate();
+  });
+
+  // Drag-over for logo zone
+  const logoZone = document.getElementById('logoZone');
+  logoZone.addEventListener('dragover', e => { e.preventDefault(); logoZone.classList.add('dragover'); });
+  logoZone.addEventListener('dragleave', () => logoZone.classList.remove('dragover'));
+  logoZone.addEventListener('drop', async e => {
+    e.preventDefault();
+    logoZone.classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) {
+      logoData = await readFileAsBase64(file);
+      renderLogo();
+    }
+  });
+
+  // Init refs zone
+  renderRefs();
+</script>
+
+</body>
+</html>
