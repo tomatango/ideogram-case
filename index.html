@@ -7,143 +7,244 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
+    :root {
+      --bg:           #09090b;
+      --sidebar-bg:   #18181b;
+      --card-bg:      #18181b;
+      --border:       #27272a;
+      --border-hover: #3f3f46;
+      --text-primary: #ffffff;
+      --text-secondary: #a1a1aa;
+      --text-muted:   #71717a;
+      --text-faint:   #52525b;
+      --purple:       #a855f7;
+      --purple-600:   #9333ea;
+      --purple-700:   #7e22ce;
+      --pink-600:     #db2777;
+      --pink-700:     #be185d;
+      --input-bg:     #27272a;
+      --input-border: #3f3f46;
+    }
+
     body {
-      background: #dde4f0;
+      background: var(--bg);
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      padding: 40px 24px 60px;
-      color: #1e2a3a;
+      color: var(--text-primary);
+      display: flex;
+      min-height: 100vh;
     }
 
-    h1 {
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: #1e2a3a;
-      margin-bottom: 6px;
+    /* ── Sidebar ──────────────────────────────────────────────── */
+    .sidebar {
+      width: 256px;
+      min-width: 256px;
+      background: var(--sidebar-bg);
+      border-right: 1px solid var(--border);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      position: sticky;
+      top: 0;
+      height: 100vh;
     }
 
-    .page-subtitle {
-      font-size: 0.9rem;
+    .sidebar-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 32px;
+    }
+
+    .sidebar-logo svg { color: var(--purple); flex-shrink: 0; }
+
+    .sidebar-logo-text {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      line-height: 1.2;
+    }
+
+    .sidebar-logo-sub {
+      font-size: 0.65rem;
+      color: var(--text-faint);
       font-weight: 400;
-      color: #9aaac8;
-      margin-bottom: 24px;
     }
 
-    .card {
-      background: #ffffff;
-      border-radius: 14px;
-      padding: 20px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    .sidebar-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1;
     }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      border-radius: 8px;
+      text-decoration: none;
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+      transition: background 0.15s;
+      cursor: pointer;
+      border: 1px solid transparent;
+    }
+
+    .nav-item:hover { background: var(--input-bg); }
+
+    .nav-item.active {
+      background: rgba(168, 85, 247, 0.1);
+      color: #c084fc;
+      border-color: rgba(168, 85, 247, 0.2);
+    }
+
+    .nav-item-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .soon-badge {
+      font-size: 0.68rem;
+      padding: 2px 8px;
+      background: var(--input-bg);
+      color: var(--text-faint);
+      border-radius: 4px;
+      border: 1px solid var(--border-hover);
+    }
+
+    .sidebar-bottom { margin-top: auto; }
+
+    /* ── Main content ─────────────────────────────────────────── */
+    .main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 40px 32px;
+    }
+
+    .main-inner {
+      max-width: 880px;
+      margin: 0 auto;
+    }
+
+    /* ── Page header ──────────────────────────────────────────── */
+    .page-header { margin-bottom: 32px; }
+
+    .page-header h2 {
+      font-size: 1.875rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+      letter-spacing: -0.02em;
+    }
+
+    .page-header .subtitle {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
+    .page-header .credit {
+      color: var(--text-faint);
+      font-size: 0.78rem;
+      margin-top: 4px;
+    }
+
+    /* ── Cards ────────────────────────────────────────────────── */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      transition: border-color 0.2s;
+    }
+
+    .card:hover { border-color: var(--border-hover); }
 
     .card-label {
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: #6b82c8;
-      margin-bottom: 12px;
+      display: block;
+      margin-bottom: 16px;
+      color: #d4d4d8;
+      font-size: 0.875rem;
+      font-weight: 500;
     }
 
-    /* Upload row */
+    .step-num {
+      display: block;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--purple);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 3px;
+    }
+
+    /* ── Upload row ───────────────────────────────────────────── */
     .upload-row {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      margin-bottom: 16px;
+      gap: 24px;
+      margin-bottom: 24px;
     }
 
-    @media (max-width: 560px) {
-      .upload-row { grid-template-columns: 1fr; }
-      .output-grid { grid-template-columns: 1fr; }
-    }
-
-    /* Dashed drop zones */
+    /* ── Drop zones ───────────────────────────────────────────── */
     .drop-zone {
-      border: 1.5px dashed #b0bdd8;
-      border-radius: 10px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
+      height: 192px;
+      border: 2px dashed var(--border-hover);
+      border-radius: 12px;
       cursor: pointer;
       position: relative;
       overflow: hidden;
-      background: #fff;
+      background: transparent;
       transition: border-color 0.2s, background 0.2s;
       gap: 8px;
       text-align: center;
       padding: 16px;
     }
 
-    .drop-zone:hover, .drop-zone.dragover {
-      border-color: #6b82c8;
-      background: #f4f6fc;
+    .drop-zone:hover {
+      border-color: rgba(168, 85, 247, 0.5);
+      background: rgba(39, 39, 42, 0.5);
     }
 
-    .drop-zone input[type="file"] {
-      position: absolute;
-      inset: 0;
-      opacity: 0;
-      cursor: pointer;
-      width: 100%;
-      height: 100%;
+    .drop-zone:hover .dz-icon svg { stroke: var(--purple); }
+    .drop-zone:hover .dz-label { color: var(--text-secondary); }
+    .drop-zone.dragover {
+      border-color: rgba(168, 85, 247, 0.7);
+      background: rgba(39, 39, 42, 0.7);
     }
 
-    .dz-icon {
-      color: #9aaac8;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .dz-icon svg { width: 28px; height: 28px; }
+    .dz-icon svg { stroke: var(--text-faint); transition: stroke 0.2s; width: 40px; height: 40px; }
 
     .dz-label {
-      font-size: 0.8rem;
-      color: #9aaac8;
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      transition: color 0.2s;
     }
 
-    /* Logo card stretches to match the refs card height */
-    .logo-card {
-      display: flex;
-      flex-direction: column;
+    .dz-sublabel {
+      font-size: 0.78rem;
+      color: var(--text-faint);
     }
 
-    .logo-zone {
-      flex: 1;
-      min-height: 150px;
-    }
+    /* Logo card stretches full height */
+    .logo-card { display: flex; flex-direction: column; }
+    .logo-zone { flex: 1; min-height: 192px; }
 
     .logo-zone .preview-img {
-      width: 100%;
-      height: 100%;
+      width: 100%; height: 100%;
       object-fit: contain;
-      position: absolute;
-      inset: 0;
+      position: absolute; inset: 0;
       padding: 16px;
-    }
-
-    .remove-btn {
-      position: absolute;
-      top: 6px;
-      right: 6px;
-      background: rgba(0,0,0,0.45);
-      border: none;
-      color: #fff;
-      border-radius: 50%;
-      width: 22px;
-      height: 22px;
-      font-size: 0.7rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 2;
-      padding: 0;
-      line-height: 1;
     }
 
     /* Refs zone */
     .refs-zone {
-      height: 150px;
+      height: 192px;
       flex-direction: row;
       flex-wrap: wrap;
       justify-content: center;
@@ -158,23 +259,20 @@
     }
 
     .ref-thumb {
-      width: 72px;
-      height: 72px;
+      width: 72px; height: 72px;
       border-radius: 8px;
       overflow: hidden;
       position: relative;
       flex-shrink: 0;
-      border: 1px solid #dce4f0;
+      border: 1px solid var(--border);
     }
 
     .ref-thumb img { width: 100%; height: 100%; object-fit: cover; }
-
     .ref-thumb .remove-btn { top: 3px; right: 3px; width: 18px; height: 18px; font-size: 0.6rem; }
 
     .refs-add {
-      width: 72px;
-      height: 72px;
-      border: 1.5px dashed #b0bdd8;
+      width: 72px; height: 72px;
+      border: 1.5px dashed var(--border-hover);
       border-radius: 8px;
       display: flex;
       flex-direction: column;
@@ -184,199 +282,213 @@
       position: relative;
       flex-shrink: 0;
       gap: 2px;
-      transition: border-color 0.2s;
-      background: #fff;
-      color: #9aaac8;
+      transition: border-color 0.2s, color 0.2s;
+      background: transparent;
+      color: var(--text-muted);
       font-size: 1.2rem;
     }
 
-    .refs-add:hover { border-color: #6b82c8; }
-    .refs-add input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
-    .refs-add small { font-size: 0.6rem; color: #b0bdd8; }
+    .refs-add:hover { border-color: var(--purple); color: var(--purple); }
+    .refs-add small { font-size: 0.6rem; color: var(--text-faint); }
 
-    /* Local API key banner */
-    .local-api-bar {
-      background: #fffbea;
-      border: 1px solid #f0d070;
-      border-radius: 14px;
-      padding: 14px 20px;
-      margin-bottom: 16px;
+    .remove-btn {
+      position: absolute;
+      top: 6px; right: 6px;
+      background: rgba(0,0,0,0.6);
+      border: none;
+      color: #fff;
+      border-radius: 50%;
+      width: 22px; height: 22px;
+      font-size: 0.7rem;
+      cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 12px;
-    }
-
-    .local-api-bar label {
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: #92700a;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      white-space: nowrap;
-      margin: 0;
-    }
-
-    .local-api-bar input {
-      flex: 1;
-      background: #fff;
-      border: 1px solid #e8d080;
-      border-radius: 8px;
-      color: #1e2a3a;
-      font-size: 0.875rem;
-      padding: 8px 12px;
-      outline: none;
-      font-family: monospace;
-      transition: border-color 0.2s;
-    }
-
-    .local-api-bar input:focus { border-color: #c8a020; }
-
-    /* Prompt card */
-    .prompt-card { margin-bottom: 16px; }
-
-    .prompt-card textarea {
-      width: 100%;
-      background: #fff;
-      border: 1px solid #dce4f0;
-      border-radius: 10px;
-      color: #1e2a3a;
-      font-size: 0.9rem;
-      padding: 12px 14px;
-      outline: none;
-      font-family: inherit;
-      resize: vertical;
-      min-height: 110px;
-      transition: border-color 0.2s;
-      line-height: 1.5;
-    }
-
-    .prompt-card textarea::placeholder { color: #b0bdd8; }
-    .prompt-card textarea:focus { border-color: #6b82c8; }
-
-    /* Buttons */
-    .btn-create-wrap {
-      display: flex;
       justify-content: center;
-      margin-bottom: 32px;
+      z-index: 2;
+      padding: 0; line-height: 1;
     }
 
-    .btn-create {
-      width: 50%;
-      padding: 15px;
-      background: #7b8fd6;
-      color: #fff;
-      border: none;
-      border-radius: 50px;
-      font-size: 0.95rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: background 0.2s, opacity 0.2s;
-    }
-
-    .btn-create:hover:not(:disabled) { background: #6b7fc6; }
-    .btn-create:disabled { opacity: 0.6; cursor: not-allowed; }
-
+    /* ── Brand style guide ────────────────────────────────────── */
     .btn-brand-style {
-      margin-top: 10px;
+      margin-top: 12px;
       width: 100%;
       padding: 10px;
-      background: #7b8fd6;
-      color: #fff;
-      border: none;
-      border-radius: 50px;
-      font-size: 0.88rem;
+      background: rgba(168, 85, 247, 0.12);
+      color: #c084fc;
+      border: 1px solid rgba(168, 85, 247, 0.25);
+      border-radius: 8px;
+      font-size: 0.85rem;
       font-weight: 500;
       cursor: pointer;
-      transition: background 0.2s, opacity 0.2s;
+      transition: background 0.2s, border-color 0.2s;
+      font-family: inherit;
     }
-    .btn-brand-style:hover:not(:disabled) { background: #6b7fc6; }
-    .btn-brand-style:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .btn-brand-style:hover:not(:disabled) {
+      background: rgba(168, 85, 247, 0.22);
+      border-color: rgba(168, 85, 247, 0.5);
+    }
+
+    .btn-brand-style:disabled { opacity: 0.35; cursor: not-allowed; }
 
     .brand-style-text {
       margin-top: 10px;
       width: 100%;
-      min-height: 80px;
+      min-height: 72px;
       padding: 10px 12px;
-      background: #1e2235;
-      color: #c8d0e8;
-      border: 1px solid #2e3552;
-      border-radius: 10px;
-      font-size: 0.88rem;
+      background: var(--input-bg);
+      color: #d4d4d8;
+      border: 1px solid var(--input-border);
+      border-radius: 8px;
+      font-size: 0.85rem;
       resize: vertical;
       box-sizing: border-box;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
     }
-    .brand-style-text::placeholder { color: #5a6480; }
 
-    .btn-regen {
+    .brand-style-text::placeholder { color: var(--text-faint); }
+
+    /* ── Prompt card ──────────────────────────────────────────── */
+    .prompt-card { margin-bottom: 24px; }
+
+    .prompt-card textarea {
       width: 100%;
-      padding: 15px;
-      background: #7a8ba8;
+      height: 128px;
+      padding: 12px 16px;
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      border-radius: 12px;
+      resize: none;
+      color: #e4e4e7;
+      font-size: 0.9rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      line-height: 1.5;
+    }
+
+    .prompt-card textarea:focus {
+      border-color: var(--purple);
+      box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.2);
+    }
+
+    .prompt-card textarea::placeholder { color: var(--text-faint); }
+
+    .prompt-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 10px;
+    }
+
+    .char-count { font-size: 0.8rem; color: var(--text-muted); }
+    .prompt-tip  { font-size: 0.8rem; color: var(--text-faint); }
+
+    /* ── Error ────────────────────────────────────────────────── */
+    .error {
+      display: none;
+      color: #f87171;
+      font-size: 0.85rem;
+      padding: 10px 14px;
+      background: rgba(248, 113, 113, 0.08);
+      border: 1px solid rgba(248, 113, 113, 0.2);
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+
+    /* ── Generate button ──────────────────────────────────────── */
+    .btn-create-wrap { margin-bottom: 40px; }
+
+    .btn-create {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(to right, var(--purple-600), var(--pink-600));
       color: #fff;
       border: none;
-      border-radius: 50px;
+      border-radius: 12px;
       font-size: 0.95rem;
       font-weight: 500;
       cursor: pointer;
-      transition: background 0.2s, opacity 0.2s;
-      margin-top: 16px;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: filter 0.2s, opacity 0.2s;
+      box-shadow: 0 4px 24px rgba(168, 85, 247, 0.25);
     }
 
-    .btn-regen:hover:not(:disabled) { background: #6a7b98; }
-    .btn-regen:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn-create:hover:not(:disabled) { filter: brightness(1.1); }
+    .btn-create:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
 
-    /* Output section */
+    /* ── Output section ───────────────────────────────────────── */
+    .section-header { margin-bottom: 24px; }
+
     .section-title {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: #1e2a3a;
-      margin-bottom: 16px;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+    }
+
+    .section-subtitle {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-top: 4px;
     }
 
     .output-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 16px;
+      gap: 24px;
+      margin-bottom: 24px;
     }
 
     .output-card {
-      background: #fff;
-      border-radius: 14px;
-      padding: 16px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-      aspect-ratio: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      position: relative;
     }
 
     .output-inner {
-      width: 100%;
-      height: 100%;
-      border: 1.5px dashed #b0bdd8;
-      border-radius: 10px;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
+      height: 320px;
+      border: 2px dashed var(--border-hover);
+      border-radius: 12px;
+      background: rgba(39, 39, 42, 0.3);
       overflow: hidden;
     }
 
     .output-inner img {
-      width: 100%;
-      height: 100%;
+      width: 100%; height: 100%;
       object-fit: cover;
-      border-radius: 8px;
+      border-radius: 10px;
       display: block;
     }
 
-    .output-card {
-      position: relative;
+    .output-placeholder-icon { color: var(--text-faint); margin-bottom: 12px; }
+    .output-placeholder-icon svg { width: 64px; height: 64px; }
+
+    .variation-label { font-size: 0.875rem; color: var(--text-muted); margin-top: 4px; }
+    .variation-sublabel { font-size: 0.8rem; color: var(--text-faint); margin-top: 4px; }
+
+    .placeholder-text {
+      font-size: 0.85rem;
+      color: var(--text-muted);
     }
 
+    /* Download button */
     .download-btn {
       position: absolute;
-      bottom: 24px;
-      right: 24px;
-      background: rgba(0,0,0,0.55);
+      bottom: 36px; right: 36px;
+      background: rgba(0,0,0,0.6);
       color: #fff;
       border: none;
       border-radius: 8px;
@@ -392,86 +504,58 @@
       font-family: inherit;
     }
 
-    .download-btn:hover { background: rgba(0,0,0,0.75); }
+    .download-btn:hover { background: rgba(0,0,0,0.8); }
     .download-btn svg { width: 13px; height: 13px; flex-shrink: 0; }
 
     .img-gen-label {
       position: absolute;
-      bottom: 24px;
-      left: 12px;
+      bottom: 36px; left: 36px;
       font-size: 0.75rem;
       font-style: italic;
       color: #fff;
-      background: rgba(0,0,0,0.45);
+      background: rgba(0,0,0,0.55);
       backdrop-filter: blur(4px);
       border-radius: 8px;
       padding: 7px 10px;
       pointer-events: none;
     }
 
-    .placeholder-text {
-      font-size: 0.85rem;
-      color: #b0bdd8;
-      text-align: center;
+    /* ── Regenerate button ────────────────────────────────────── */
+    .btn-regen {
+      display: block;
+      margin: 0 auto 32px;
+      padding: 10px 32px;
+      background: var(--input-bg);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-hover);
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
     }
 
-    .spinner {
-      width: 32px;
-      height: 32px;
-      border: 3px solid #dce4f0;
-      border-top-color: #7b8fd6;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
+    .btn-regen:hover:not(:disabled) {
+      background: var(--border-hover);
+      color: var(--text-primary);
     }
 
-    @keyframes spin { to { transform: rotate(360deg); } }
+    .btn-regen:disabled { opacity: 0.4; cursor: not-allowed; }
 
-    .error {
-      background: #fff0f0;
-      border: 1px solid #f5c6c6;
-      border-radius: 10px;
-      color: #c0392b;
-      padding: 12px 16px;
-      font-size: 0.85rem;
-      margin-bottom: 16px;
-      display: none;
-    }
-
-    .max-width { max-width: 900px; margin: 0 auto; }
-
-    /* History */
-    .history-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      margin-bottom: 16px;
-      opacity: 0.75;
-    }
-
-    .history-row .output-card { position: relative; }
-
-    .history-label {
-      font-size: 0.75rem;
-      color: #9aaac8;
-      margin-bottom: 8px;
-    }
-
-    @media (max-width: 560px) {
-      .history-row { grid-template-columns: 1fr; }
-    }
-
+    /* ── Model info ───────────────────────────────────────────── */
     .model-info-bar {
       display: flex;
       align-items: center;
       gap: 14px;
-      margin-top: 40px;
+      margin-bottom: 32px;
     }
 
     .btn-model-info {
       background: none;
-      border: 1px solid #b0bdd8;
+      border: 1px solid var(--border-hover);
       border-radius: 50px;
-      color: #9aaac8;
+      color: var(--text-muted);
       font-size: 0.78rem;
       padding: 6px 14px;
       cursor: pointer;
@@ -479,123 +563,484 @@
       transition: border-color 0.2s, color 0.2s;
       white-space: nowrap;
     }
-    .btn-model-info:hover { border-color: #7b8fd6; color: #7b8fd6; }
+
+    .btn-model-info:hover { border-color: var(--purple); color: var(--purple); }
 
     .model-info-label {
       font-size: 0.78rem;
-      color: #9aaac8;
+      color: var(--text-muted);
       font-family: monospace;
+      line-height: 1.8;
+    }
+
+    /* ── History ──────────────────────────────────────────────── */
+    .history-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 16px;
+      letter-spacing: -0.02em;
+    }
+
+    .history-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .history-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .history-row .output-card { padding: 12px; }
+    .history-row .output-card .output-inner { height: 180px; }
+
+    /* ── Spinner ──────────────────────────────────────────────── */
+    .spinner {
+      width: 32px; height: 32px;
+      border: 3px solid var(--border-hover);
+      border-top-color: var(--purple);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Local API bar ────────────────────────────────────────── */
+    .local-api-bar {
+      background: rgba(234, 179, 8, 0.07);
+      border: 1px solid rgba(234, 179, 8, 0.2);
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .local-api-bar label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #ca8a04;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      white-space: nowrap;
+      margin: 0;
+    }
+
+    .local-api-bar input {
+      flex: 1;
+      background: var(--input-bg);
+      border: 1px solid rgba(234, 179, 8, 0.25);
+      border-radius: 6px;
+      color: #e4e4e7;
+      font-size: 0.85rem;
+      padding: 6px 10px;
+      outline: none;
+      font-family: monospace;
+    }
+
+    /* ── Enhance button ───────────────────────────────────────── */
+    .btn-enhance {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 12px;
+      background: rgba(168, 85, 247, 0.1);
+      color: #c084fc;
+      border: 1px solid rgba(168, 85, 247, 0.25);
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.2s, border-color 0.2s;
+      white-space: nowrap;
+    }
+
+    .btn-enhance:hover:not(:disabled) {
+      background: rgba(168, 85, 247, 0.2);
+      border-color: rgba(168, 85, 247, 0.5);
+    }
+
+    .btn-enhance:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    /* ── Enhance modal ─────────────────────────────────────────── */
+    .enhance-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .enhance-overlay.open { display: flex; }
+
+    .enhance-modal {
+      background: #1c1c1f;
+      border: 1px solid var(--border-hover);
+      border-radius: 14px;
+      width: 100%;
+      max-width: 560px;
+      margin: 24px;
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+      overflow: hidden;
+    }
+
+    .enhance-modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .enhance-modal-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .enhance-close {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 4px;
+      line-height: 1;
+      transition: color 0.15s;
+    }
+
+    .enhance-close:hover { color: var(--text-primary); }
+
+    .enhance-modal-body {
+      padding: 20px;
+      min-height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .enhance-modal-body.loaded {
+      display: block;
+      align-items: unset;
+      justify-content: unset;
+    }
+
+    .enhance-modal-text {
+      font-size: 0.9rem;
+      color: #d4d4d8;
+      line-height: 1.65;
+    }
+
+    .enhance-modal-footer {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 20px;
+      border-top: 1px solid var(--border);
+      justify-content: flex-end;
+    }
+
+    .btn-use-enhanced {
+      padding: 9px 18px;
+      background: linear-gradient(to right, var(--purple-600), var(--pink-600));
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: inherit;
+      transition: filter 0.2s, opacity 0.2s;
+    }
+
+    .btn-use-enhanced:hover:not(:disabled) { filter: brightness(1.1); }
+    .btn-use-enhanced:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .btn-enhance-cancel {
+      padding: 9px 18px;
+      background: none;
+      color: var(--text-secondary);
+      border: 1px solid var(--border-hover);
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .btn-enhance-cancel:hover { background: var(--input-bg); color: var(--text-primary); }
+
+    /* ── Responsive ───────────────────────────────────────────── */
+    @media (max-width: 860px) {
+      .sidebar { display: none; }
+      .main { padding: 24px 16px; }
+    }
+
+    @media (max-width: 600px) {
+      .upload-row { grid-template-columns: 1fr; }
+      .output-grid { grid-template-columns: 1fr; }
+      .history-row { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
-<div class="max-width">
 
-  <h1>Ideogram PM Case: Brand Consistent Image Generator</h1>
-  <h2 class="page-subtitle">Prototype by: Tomy Tang</h2>
+  <!-- ── Sidebar ──────────────────────────────────────────────── -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/>
+        <path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/>
+      </svg>
+      <div>
+        <div class="sidebar-logo-text">CampaignAI</div>
+        <div class="sidebar-logo-sub">by Tomy Tang</div>
+      </div>
+    </div>
 
-  <!-- Local dev API key bar (localhost only) -->
-  <div class="local-api-bar" id="localApiBar" style="display:none">
-    <label>API Key</label>
-    <input type="password" id="localApiKey" placeholder="Paste your Gemini API key for local testing..." />
-  </div>
-
-  <!-- Upload row -->
-  <div class="upload-row">
-
-    <!-- Logo card -->
-    <div class="card logo-card">
-      <div class="card-label">Step 1:<br>Upload Reference Logo</div>
-      <div class="drop-zone logo-zone" id="logoZone">
-        <input type="file" id="logoInput" accept="image/*" onchange="handleLogo(this)">
-        <div class="dz-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <path d="M12 16V4m0 0L8 8m4-4l4 4" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1" stroke-linecap="round" stroke-linejoin="round"/>
+    <nav class="sidebar-nav">
+      <a class="nav-item active">
+        <div class="nav-item-left">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72"/>
+            <path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/><path d="M7 8H3"/><path d="M21 16h-4"/><path d="M11 3H9"/>
           </svg>
+          <span>Generate</span>
         </div>
-        <span class="dz-label">Click to upload logo</span>
+      </a>
+      <a class="nav-item">
+        <div class="nav-item-left">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/>
+            <path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          </svg>
+          <span>Explore</span>
+        </div>
+        <span class="soon-badge">Soon</span>
+      </a>
+      <a class="nav-item">
+        <div class="nav-item-left">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"/>
+            <path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"/>
+            <path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"/>
+          </svg>
+          <span>My Images</span>
+        </div>
+        <span class="soon-badge">Soon</span>
+      </a>
+      <a class="nav-item">
+        <div class="nav-item-left">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+          </svg>
+          <span>Favorites</span>
+        </div>
+        <span class="soon-badge">Soon</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <a class="nav-item">
+        <div class="nav-item-left">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+          <span>Settings</span>
+        </div>
+      </a>
+    </div>
+  </aside>
+
+  <!-- ── Main ─────────────────────────────────────────────────── -->
+  <main class="main">
+    <div class="main-inner">
+
+      <!-- Page header -->
+      <div class="page-header">
+        <h2>What will you create?</h2>
+        <p class="subtitle">Upload your references and describe your campaign vision</p>
+        <p class="credit">Ideogram PM Case: Brand Consistent Image Generator</p>
       </div>
-    </div>
 
-    <!-- References card -->
-    <div class="card">
-      <div class="card-label">Step 2 (Optional):<br>Create a Brand Style (Upload up to 5 Reference Images)</div>
-      <input type="file" id="refsInput" accept="image/*" multiple style="display:none" onchange="handleRefs(this)">
-      <div class="drop-zone refs-zone" id="refsZone" onclick="document.getElementById('refsInput').click()">
-        <!-- rendered by JS -->
+      <!-- Local dev API key bar (localhost only) -->
+      <div class="local-api-bar" id="localApiBar" style="display:none">
+        <label>API Key</label>
+        <input type="password" id="localApiKey" placeholder="Paste your Gemini API key for local testing..." />
       </div>
-      <button class="btn-brand-style" id="brandStyleBtn" disabled onclick="generateBrandStyle()">Generate Brand Style Guide</button>
-      <textarea class="brand-style-text" id="brandStyleText" readonly autocomplete="off" placeholder="The style guide is used to help us create images that better fit your brand."></textarea>
-    </div>
 
-  </div>
+      <!-- Upload row -->
+      <div class="upload-row">
 
-  <!-- Prompt card -->
-  <div class="card prompt-card">
-    <div class="card-label">Step 3:<br>Outline your idea here</div>
-    <textarea id="prompt" placeholder="e.g.&#10;• Product shot of a new summer drink&#10;• Lifestyle photo for a back-to-school post&#10;• In-packaging shot of product on a shelf"></textarea>
-  </div>
+        <!-- Logo card -->
+        <div class="card logo-card">
+          <label class="card-label">
+            <span class="step-num">Step 1</span>
+            Reference Logo
+          </label>
+          <div class="drop-zone logo-zone" id="logoZone">
+            <!-- rendered by JS -->
+          </div>
+        </div>
 
-  <!-- Error -->
-  <div class="error" id="error"></div>
+        <!-- Refs card -->
+        <div class="card">
+          <label class="card-label">
+            <span class="step-num">Step 2 — Optional</span>
+            Reference Images (0/5)
+          </label>
+          <input type="file" id="refsInput" accept="image/*" multiple style="display:none" onchange="handleRefs(this)">
+          <div class="drop-zone refs-zone" id="refsZone" onclick="document.getElementById('refsInput').click()">
+            <!-- rendered by JS -->
+          </div>
+          <button class="btn-brand-style" id="brandStyleBtn" disabled onclick="generateBrandStyle()">Generate Brand Style Guide</button>
+          <textarea class="brand-style-text" id="brandStyleText" readonly autocomplete="off" placeholder="The style guide is used to help us create images that better fit your brand."></textarea>
+        </div>
 
-  <!-- Create button -->
-  <div class="btn-create-wrap">
-    <button class="btn-create" id="createBtn" onclick="generate()">Step 4:<br>Create Images</button>
-  </div>
-
-  <!-- Output section -->
-  <div class="section-title">Generated Images (2 variations)</div>
-
-  <div class="output-grid">
-    <div class="output-card">
-      <div class="output-inner" id="box1">
-        <span class="placeholder-text">Image 1 will appear here</span>
       </div>
-      <div class="img-gen-label" id="label1" style="display:none"></div>
-      <button class="download-btn" id="dl1">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 4v12m0 0l-4-4m4 4l4-4"/><path d="M4 20h16"/>
-        </svg>
-        Download
-      </button>
-    </div>
-    <div class="output-card">
-      <div class="output-inner" id="box2">
-        <span class="placeholder-text">Image 2 will appear here</span>
+
+      <!-- Prompt card -->
+      <div class="card prompt-card">
+        <label class="card-label">
+          <span class="step-num">Step 3</span>
+          Campaign Description
+        </label>
+        <textarea id="prompt" placeholder="Describe your campaign vision in detail... What message do you want to convey? What emotions should it evoke?"></textarea>
+        <div class="prompt-meta">
+          <span class="char-count" id="charCount">0 characters</span>
+          <div style="display:flex;align-items:center;gap:12px">
+            <span class="prompt-tip">Tip: Be specific about colors, mood, and style</span>
+            <button class="btn-enhance" id="enhanceBtn" disabled onclick="enhancePrompt()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/>
+                <path d="M20 3v4"/><path d="M22 5h-4"/>
+              </svg>
+              Enhance
+            </button>
+          </div>
+        </div>
       </div>
-      <div class="img-gen-label" id="label2" style="display:none"></div>
-      <button class="download-btn" id="dl2">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 4v12m0 0l-4-4m4 4l4-4"/><path d="M4 20h16"/>
-        </svg>
-        Download
-      </button>
+
+      <!-- Enhance modal -->
+      <div class="enhance-overlay" id="enhanceOverlay" onclick="closeEnhanceModal(event)">
+        <div class="enhance-modal">
+          <div class="enhance-modal-header">
+            <div class="enhance-modal-title">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--purple)">
+                <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/>
+                <path d="M20 3v4"/><path d="M22 5h-4"/>
+              </svg>
+              Enhanced Description
+            </div>
+            <button class="enhance-close" onclick="document.getElementById('enhanceOverlay').style.display='none'">✕</button>
+          </div>
+          <div class="enhance-modal-body" id="enhanceModalBody">
+            <div class="spinner"></div>
+          </div>
+          <div class="enhance-modal-footer">
+            <button class="btn-use-enhanced" id="btnUseEnhanced" onclick="useEnhancedPrompt()" disabled>Use this instead</button>
+            <button class="btn-enhance-cancel" onclick="document.getElementById('enhanceOverlay').style.display='none'">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Error -->
+      <div class="error" id="error"></div>
+
+      <!-- Generate button -->
+      <div class="btn-create-wrap">
+        <button class="btn-create" id="createBtn" onclick="generate()" disabled>
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/>
+            <path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/>
+          </svg>
+          Generate Campaign Images
+        </button>
+      </div>
+
+      <!-- Output section -->
+      <div class="section-header">
+        <div class="section-title">Your Creations</div>
+        <div class="section-subtitle" id="creationsSubtitle">2 variations will be generated</div>
+      </div>
+
+      <div class="output-grid">
+        <div class="output-card">
+          <div class="output-inner" id="box1">
+            <div class="output-placeholder-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
+                <circle cx="9" cy="9" r="2"/>
+                <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+              </svg>
+            </div>
+            <p class="variation-label">Variation 1</p>
+            <p class="variation-sublabel">Your first image will appear here</p>
+          </div>
+          <div class="img-gen-label" id="label1" style="display:none"></div>
+          <button class="download-btn" id="dl1">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 4v12m0 0l-4-4m4 4l4-4"/><path d="M4 20h16"/>
+            </svg>
+            Download
+          </button>
+        </div>
+        <div class="output-card">
+          <div class="output-inner" id="box2">
+            <div class="output-placeholder-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
+                <circle cx="9" cy="9" r="2"/>
+                <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+              </svg>
+            </div>
+            <p class="variation-label">Variation 2</p>
+            <p class="variation-sublabel">Your second image will appear here</p>
+          </div>
+          <div class="img-gen-label" id="label2" style="display:none"></div>
+          <button class="download-btn" id="dl2">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 4v12m0 0l-4-4m4 4l4-4"/><path d="M4 20h16"/>
+            </svg>
+            Download
+          </button>
+        </div>
+      </div>
+
+      <!-- Regenerate button -->
+      <button class="btn-regen" id="regenBtn" onclick="generate()" disabled>Regenerate</button>
+
+      <!-- Model info -->
+      <div class="model-info-bar">
+        <button class="btn-model-info" onclick="toggleModelInfo()">See Gen Model Used</button>
+        <div class="model-info-label" id="modelInfoLabel" style="display:none">
+          <span>Image Gen Model: <strong id="modelImageName"></strong></span><br>
+          <span>Brand Style Gen Model: <strong id="modelStyleName"></strong></span>
+        </div>
+      </div>
+
+      <!-- History -->
+      <div id="historySection" style="display:none">
+        <div class="history-title">History</div>
+        <div id="historyList"></div>
+      </div>
+
     </div>
-  </div>
-
-  <!-- Regenerate button -->
-  <button class="btn-regen" id="regenBtn" onclick="generate()" disabled>Regenerate</button>
-
-  <!-- Model info -->
-  <div class="model-info-bar">
-    <button class="btn-model-info" onclick="toggleModelInfo()">See Gen Model Used</button>
-    <div class="model-info-label" id="modelInfoLabel" style="display:none">
-      <span>Image Gen Model: <strong id="modelImageName"></strong></span><br>
-      <span>Brand Style Gen Model: <strong id="modelStyleName"></strong></span>
-    </div>
-  </div>
-
-  <!-- History -->
-  <div id="historySection">
-    <div class="section-title" style="margin-top:40px">History</div>
-    <div id="historyList">
-      <p style="color:#b0bdd8;font-size:0.85rem;margin-top:8px">Previously generated images will appear here after you regenerate.</p>
-    </div>
-  </div>
-
-</div>
+  </main>
 
 <script>
   const MODEL_IMAGE = 'gemini-3.1-flash-image-preview';
@@ -610,6 +1055,7 @@
     label.style.display = shown ? 'none' : 'block';
     btn.textContent     = shown ? 'See Gen Model Used' : 'Hide Gen Model Used';
   }
+
   let generationHistory = [];
 
   function captureCurrentImages() {
@@ -642,14 +1088,15 @@
       : `<span class="placeholder-text">Not available</span>`;
     return `<div class="output-card"><div class="output-inner">${inner}</div></div>`;
   }
+
   const IS_LOCAL = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
-  const API_URL = IS_LOCAL ? '/api/generate' : 'https://ideogram-case.vercel.app/api/generate';
-  // API key is loaded server-side from .env.local via vercel dev — no manual entry needed
+  const API_URL      = IS_LOCAL ? '/api/generate' : 'https://ideogram-case.vercel.app/api/generate';
+  const API_TEXT_URL = IS_LOCAL ? '/api/text'     : 'https://ideogram-case.vercel.app/api/text';
 
   let logoData  = null;
   let refImages = [];
 
-  // ── File reading ──────────────────────────────────────────
+  // ── File reading ──────────────────────────────────────────────
   function readFileAsBase64(file) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -663,7 +1110,7 @@
     });
   }
 
-  // ── Logo ──────────────────────────────────────────────────
+  // ── Logo ──────────────────────────────────────────────────────
   async function handleLogo(input) {
     if (!input.files[0]) return;
     logoData = await readFileAsBase64(input.files[0]);
@@ -681,11 +1128,13 @@
         <input type="file" id="logoInput" accept="image/*" onchange="handleLogo(this)">
         <div class="dz-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <path d="M12 16V4m0 0L8 8m4-4l4 4" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" x2="12" y1="3" y2="15"/>
           </svg>
         </div>
-        <span class="dz-label">Click to upload logo</span>`;
+        <span class="dz-label">Drop your logo here or click to upload</span>
+        <span class="dz-sublabel">PNG, JPG up to 10MB</span>`;
     }
   }
 
@@ -700,7 +1149,7 @@
     checkCreateBtn();
   }
 
-  // ── Reference images ──────────────────────────────────────
+  // ── Reference images ──────────────────────────────────────────
   async function handleRefs(input) {
     const remaining = 5 - refImages.length;
     if (remaining <= 0) return;
@@ -728,12 +1177,16 @@
     if (count === 0) {
       zone.classList.remove('has-images');
       zone.innerHTML = `
-        <div style="width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;pointer-events:none">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#9aaac8" stroke-width="1.5">
-            <path d="M12 16V4m0 0L8 8m4-4l4 4" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          <span class="dz-label">Upload images (0/5)</span>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none">
+          <div class="dz-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
+              <circle cx="9" cy="9" r="2"/>
+              <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+            </svg>
+          </div>
+          <span class="dz-label">Add reference images</span>
+          <span class="dz-sublabel">PNG, JPG up to 10MB</span>
         </div>`;
     } else {
       zone.classList.add('has-images');
@@ -753,11 +1206,11 @@
     }
   }
 
-  // ── Brand Style Guide ─────────────────────────────────────
+  // ── Brand Style Guide ─────────────────────────────────────────
   async function generateBrandStyle() {
     const btn      = document.getElementById('brandStyleBtn');
     const textarea = document.getElementById('brandStyleText');
-    btn.disabled   = true;
+    btn.disabled    = true;
     btn.textContent = 'Generating...';
     textarea.value  = '';
 
@@ -767,7 +1220,7 @@
       }));
       parts.push({ text: 'You are a professional marketing agent. Using the attached images, generate a short 5 to 10 word description of the brand style to be used as the brand style guide. Return this description as one line of text.' });
 
-      const res  = await fetch(API_URL, {
+      const res  = await fetch(API_TEXT_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ parts })
@@ -786,12 +1239,17 @@
     }
   }
 
-  // ── Generation ────────────────────────────────────────────
+  // ── Generation ────────────────────────────────────────────────
   function setLoading(loading) {
     const createBtn = document.getElementById('createBtn');
     const regenBtn  = document.getElementById('regenBtn');
     createBtn.disabled = loading;
-    createBtn.innerHTML = loading ? 'Generating...' : 'Step 4:<br>Create Images';
+    createBtn.innerHTML = loading
+      ? 'Generating...'
+      : `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+           <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/>
+           <path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/>
+         </svg> Generate Campaign Images`;
     regenBtn.disabled = loading;
 
     if (loading) {
@@ -808,8 +1266,7 @@
   }
 
   function clearError() {
-    const el = document.getElementById('error');
-    el.style.display = 'none';
+    document.getElementById('error').style.display = 'none';
   }
 
   function checkCreateBtn() {
@@ -827,7 +1284,7 @@
     setLoading(true);
 
     try {
-      // ── Left image: brand style guide focused ─────────────
+      // ── Left image: brand style guide focused ──────────────
       const partsLeft = [];
       let usedStyleGuide = false;
 
@@ -847,12 +1304,11 @@
           partsLeft.push({ text: 'Use the reference images as stylistic inspiration.' });
         }
       } else {
-        // No prompt, no style guide — use ref images
         refImages.forEach(img => partsLeft.push({ inlineData: { mimeType: img.mimeType, data: img.data } }));
         partsLeft.push({ text: 'Generate an image inspired by the style and aesthetic of these reference images.' + (logoData ? ' Incorporate the provided logo faithfully.' : '') });
       }
 
-      // ── Right image: user description focused ─────────────
+      // ── Right image: user description focused ──────────────
       const partsRight = [];
       let usedDescription = false;
 
@@ -869,7 +1325,6 @@
         txt += ` based on the brand style guide: ${styleGuide}`;
         partsRight.push({ text: txt });
       } else {
-        // No prompt, no style guide — use ref images
         refImages.forEach(img => partsRight.push({ inlineData: { mimeType: img.mimeType, data: img.data } }));
         partsRight.push({ text: 'Generate an image inspired by the style and aesthetic of these reference images.' + (logoData ? ' Incorporate the provided logo faithfully.' : '') });
       }
@@ -880,7 +1335,6 @@
       ]);
 
       const [data1, data2] = await Promise.all([res1.json(), res2.json()]);
-
       if (!res1.ok) throw new Error(data1.error?.message || `API error ${res1.status}`);
       if (!res2.ok) throw new Error(data2.error?.message || `API error ${res2.status}`);
 
@@ -891,7 +1345,7 @@
       };
 
       [
-        [data1, 'box1', 'dl1', 'label1', usedStyleGuide  ? 'Based on the brand style guide'   : null],
+        [data1, 'box1', 'dl1', 'label1', usedStyleGuide  ? 'Based on the brand style guide'  : null],
         [data2, 'box2', 'dl2', 'label2', usedDescription ? "Based on the User's description" : null],
       ].forEach(([data, boxId, dlId, labelId, labelText], i) => {
         const box   = document.getElementById(boxId);
@@ -911,8 +1365,8 @@
             a.download = `generated-image-${i + 1}.png`;
             a.click();
           };
-          label.textContent    = labelText ?? '';
-          label.style.display  = labelText ? 'block' : 'none';
+          label.textContent   = labelText ?? '';
+          label.style.display = labelText ? 'block' : 'none';
         } else {
           box.innerHTML       = '<span class="placeholder-text">Image not available</span>';
           dlBtn.style.display = 'none';
@@ -921,6 +1375,7 @@
       });
 
       document.getElementById('regenBtn').disabled = false;
+      document.getElementById('creationsSubtitle').textContent = '2 variations generated';
 
     } catch (err) {
       setLoading(false);
@@ -931,14 +1386,21 @@
     setLoading(false);
   }
 
-  document.getElementById('prompt').addEventListener('input', checkCreateBtn);
+  // Character counter
+  document.getElementById('prompt').addEventListener('input', function () {
+    const len = this.value.length;
+    document.getElementById('charCount').textContent = len + ' character' + (len === 1 ? '' : 's');
+    document.getElementById('enhanceBtn').disabled = len === 0;
+    checkCreateBtn();
+  });
+
   document.getElementById('prompt').addEventListener('keydown', e => {
     if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) generate();
   });
 
-  // Drag-over for logo zone
+  // Drag-and-drop for logo zone
   const logoZone = document.getElementById('logoZone');
-  logoZone.addEventListener('dragover', e => { e.preventDefault(); logoZone.classList.add('dragover'); });
+  logoZone.addEventListener('dragover',  e => { e.preventDefault(); logoZone.classList.add('dragover'); });
   logoZone.addEventListener('dragleave', () => logoZone.classList.remove('dragover'));
   logoZone.addEventListener('drop', async e => {
     e.preventDefault();
@@ -950,7 +1412,74 @@
     }
   });
 
-  // Init refs zone
+  // ── Enhance prompt ───────────────────────────────────────────
+  let enhancedText = '';
+
+  async function enhancePrompt() {
+    const original = document.getElementById('prompt').value.trim();
+    if (!original) return;
+
+    const overlay = document.getElementById('enhanceOverlay');
+    const body    = document.getElementById('enhanceModalBody');
+    const useBtn  = document.getElementById('btnUseEnhanced');
+
+    enhancedText = '';
+    useBtn.disabled = true;
+    body.className  = 'enhance-modal-body';
+    body.innerHTML  = '<div class="spinner"></div>';
+    overlay.classList.add('open');
+
+    try {
+      const styleGuide = document.getElementById('brandStyleText').value.trim();
+      const parts = [];
+
+      // Attach reference images if available
+      if (refImages.length > 0) {
+        refImages.forEach(img => parts.push({ inlineData: { mimeType: img.mimeType, data: img.data } }));
+      }
+
+      // Build the prompt
+      let promptText = `You are an expert marketing professional. You are tasked with writing a prompt that can generate a professional grade promotional image based on this description: ${original}`;
+      if (styleGuide) promptText += `, the brand style guide: ${styleGuide}`;
+      if (refImages.length > 0) promptText += `, and the reference images attached`;
+      promptText += `. Return only the image generation prompt as a single paragraph, with no preamble or explanation.`;
+
+      parts.push({ text: promptText });
+
+      const res  = await fetch(API_TEXT_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ parts }) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error?.message || `API error ${res.status}`);
+
+      const textPart = data.candidates?.[0]?.content?.parts?.find(p => p.text);
+      enhancedText = textPart?.text?.trim() ?? '';
+
+      body.className = 'enhance-modal-body loaded';
+      body.innerHTML = `<p class="enhance-modal-text">${enhancedText.replace(/\n/g, '<br>')}</p>`;
+      useBtn.disabled = !enhancedText;
+    } catch (err) {
+      body.className = 'enhance-modal-body loaded';
+      body.innerHTML = `<p class="enhance-modal-text" style="color:#f87171">Error: ${err.message}</p>`;
+    }
+  }
+
+  function useEnhancedPrompt() {
+    if (!enhancedText) return;
+    const textarea = document.getElementById('prompt');
+    textarea.value = enhancedText;
+    const len = enhancedText.length;
+    document.getElementById('charCount').textContent = len + ' character' + (len === 1 ? '' : 's');
+    checkCreateBtn();
+    document.getElementById('enhanceOverlay').classList.remove('open');
+  }
+
+  function closeEnhanceModal(e) {
+    if (e.target === document.getElementById('enhanceOverlay')) {
+      document.getElementById('enhanceOverlay').classList.remove('open');
+    }
+  }
+
+  // Init
+  renderLogo();
   renderRefs();
   checkCreateBtn();
 </script>
