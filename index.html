@@ -388,6 +388,14 @@
     .download-btn:hover { background: rgba(0,0,0,0.75); }
     .download-btn svg { width: 13px; height: 13px; flex-shrink: 0; }
 
+    .img-gen-label {
+      margin-top: 8px;
+      text-align: center;
+      font-size: 0.78rem;
+      font-style: italic;
+      color: #9aaac8;
+    }
+
     .placeholder-text {
       font-size: 0.85rem;
       color: #b0bdd8;
@@ -477,7 +485,7 @@
         <!-- rendered by JS -->
       </div>
       <button class="btn-brand-style" id="brandStyleBtn" disabled onclick="generateBrandStyle()">Generate Brand Style Guide</button>
-      <textarea class="brand-style-text" id="brandStyleText" placeholder="The style guide is used to help us create images that better fit your brand."></textarea>
+      <textarea class="brand-style-text" id="brandStyleText" readonly placeholder="The style guide is used to help us create images that better fit your brand."></textarea>
     </div>
 
   </div>
@@ -510,6 +518,7 @@
         </svg>
         Download
       </button>
+      <div class="img-gen-label" id="label1" style="display:none"></div>
     </div>
     <div class="output-card">
       <div class="output-inner" id="box2">
@@ -521,6 +530,7 @@
         </svg>
         Download
       </button>
+      <div class="img-gen-label" id="label2" style="display:none"></div>
     </div>
   </div>
 
@@ -645,6 +655,7 @@
     const zone  = document.getElementById('refsZone');
     const count = refImages.length;
     document.getElementById('brandStyleBtn').disabled = count === 0;
+    checkCreateBtn();
 
     if (count === 0) {
       zone.classList.remove('has-images');
@@ -698,6 +709,7 @@
 
       const textPart = data.candidates?.[0]?.content?.parts?.find(p => p.text);
       textarea.value = textPart?.text?.trim() ?? 'No response received.';
+      checkCreateBtn();
     } catch (err) {
       textarea.value = 'Error: ' + err.message;
     } finally {
@@ -732,41 +744,71 @@
     el.style.display = 'none';
   }
 
+  function checkCreateBtn() {
+    const prompt     = document.getElementById('prompt').value.trim();
+    const styleGuide = document.getElementById('brandStyleText').value.trim();
+    const hasRefs    = refImages.length > 0;
+    document.getElementById('createBtn').disabled = !prompt && !hasRefs && !styleGuide;
+  }
+
   async function generate() {
-    const prompt = document.getElementById('prompt').value.trim();
+    const prompt     = document.getElementById('prompt').value.trim();
+    const styleGuide = document.getElementById('brandStyleText').value.trim();
     clearError();
-    if (!prompt) return showError('Please enter a prompt.');
     captureCurrentImages();
     setLoading(true);
 
     try {
-      const parts = [];
+      // ── Left image: brand style guide focused ─────────────
+      const partsLeft = [];
+      let usedStyleGuide = false;
 
-      if (logoData) {
-        parts.push({ text: 'The following is the brand logo. Use it exactly as-is in the output — do not alter, redesign, or stylize it. Place it naturally on products or within the scene as appropriate:' });
-        parts.push({ inlineData: { mimeType: logoData.mimeType, data: logoData.data } });
+      if (logoData) partsLeft.push({ inlineData: { mimeType: logoData.mimeType, data: logoData.data } });
+
+      if (styleGuide) {
+        usedStyleGuide = true;
+        let txt = 'Generate an image';
+        if (logoData) txt += ' that uses the attached logo';
+        txt += ` based on the brand style guide: ${styleGuide}`;
+        partsLeft.push({ text: txt });
+      } else if (prompt) {
+        partsLeft.push({ text: prompt });
+        if (logoData) partsLeft.push({ text: 'Incorporate the provided logo faithfully and prominently.' });
+        if (refImages.length > 0) {
+          refImages.forEach(img => partsLeft.push({ inlineData: { mimeType: img.mimeType, data: img.data } }));
+          partsLeft.push({ text: 'Use the reference images as stylistic inspiration.' });
+        }
+      } else {
+        // No prompt, no style guide — use ref images
+        refImages.forEach(img => partsLeft.push({ inlineData: { mimeType: img.mimeType, data: img.data } }));
+        partsLeft.push({ text: 'Generate an image inspired by the style and aesthetic of these reference images.' + (logoData ? ' Incorporate the provided logo faithfully.' : '') });
       }
 
-      if (refImages.length > 0) {
-        parts.push({ text: 'The following image(s) are stylistic references only. Use them for ideation — draw inspiration from their mood, color palette, composition, and aesthetic, but do not copy them directly:' });
-        refImages.forEach(img => parts.push({ inlineData: { mimeType: img.mimeType, data: img.data } }));
+      // ── Right image: user description focused ─────────────
+      const partsRight = [];
+      let usedDescription = false;
+
+      if (logoData) partsRight.push({ inlineData: { mimeType: logoData.mimeType, data: logoData.data } });
+
+      if (prompt) {
+        usedDescription = true;
+        let txt = `Generate an image based on this description: ${prompt}`;
+        if (logoData) txt += ', and insert the logo into its products';
+        partsRight.push({ text: txt });
+      } else if (styleGuide) {
+        let txt = 'Generate an image';
+        if (logoData) txt += ' that uses the attached logo';
+        txt += ` based on the brand style guide: ${styleGuide}`;
+        partsRight.push({ text: txt });
+      } else {
+        // No prompt, no style guide — use ref images
+        refImages.forEach(img => partsRight.push({ inlineData: { mimeType: img.mimeType, data: img.data } }));
+        partsRight.push({ text: 'Generate an image inspired by the style and aesthetic of these reference images.' + (logoData ? ' Incorporate the provided logo faithfully.' : '') });
       }
-
-      const augmentedPrompt = (logoData || refImages.length > 0)
-        ? [
-            prompt,
-            logoData ? 'Incorporate the provided logo faithfully and prominently into the image as it would appear on real products or in the scene.' : '',
-            refImages.length > 0 ? 'Use the reference images as stylistic inspiration for the overall look and feel.' : '',
-          ].filter(Boolean).join(' ')
-        : prompt;
-
-      parts.push({ text: augmentedPrompt });
-
-      const body = JSON.stringify({ parts });
 
       const [res1, res2] = await Promise.all([
-        fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body }),
-        fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body })
+        fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ parts: partsLeft }) }),
+        fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ parts: partsRight }) })
       ]);
 
       const [data1, data2] = await Promise.all([res1.json(), res2.json()]);
@@ -775,15 +817,19 @@
       if (!res2.ok) throw new Error(data2.error?.message || `API error ${res2.status}`);
 
       const extractImage = (data) => {
-        const parts = data.candidates?.[0]?.content?.parts ?? [];
-        const imgPart = parts.find(p => p.inlineData?.mimeType?.startsWith('image/'));
+        const p = data.candidates?.[0]?.content?.parts ?? [];
+        const imgPart = p.find(p => p.inlineData?.mimeType?.startsWith('image/'));
         return imgPart ? `data:${imgPart.inlineData.mimeType};base64,${imgPart.inlineData.data}` : null;
       };
 
-      [data1, data2].forEach((data, i) => {
-        const box = document.getElementById(i === 0 ? 'box1' : 'box2');
-        const dlBtn = document.getElementById(i === 0 ? 'dl1' : 'dl2');
-        const src = extractImage(data);
+      [
+        [data1, 'box1', 'dl1', 'label1', usedStyleGuide  ? 'Based on the brand style guide'   : null],
+        [data2, 'box2', 'dl2', 'label2', usedDescription ? "Based on the User's description" : null],
+      ].forEach(([data, boxId, dlId, labelId, labelText], i) => {
+        const box   = document.getElementById(boxId);
+        const dlBtn = document.getElementById(dlId);
+        const label = document.getElementById(labelId);
+        const src   = extractImage(data);
         if (src) {
           const img = document.createElement('img');
           img.src = src;
@@ -797,9 +843,12 @@
             a.download = `generated-image-${i + 1}.png`;
             a.click();
           };
+          label.textContent    = labelText ?? '';
+          label.style.display  = labelText ? 'block' : 'none';
         } else {
-          box.innerHTML = '<span class="placeholder-text">Image not available</span>';
+          box.innerHTML       = '<span class="placeholder-text">Image not available</span>';
           dlBtn.style.display = 'none';
+          label.style.display = 'none';
         }
       });
 
@@ -814,6 +863,7 @@
     setLoading(false);
   }
 
+  document.getElementById('prompt').addEventListener('input', checkCreateBtn);
   document.getElementById('prompt').addEventListener('keydown', e => {
     if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) generate();
   });
@@ -834,6 +884,7 @@
 
   // Init refs zone
   renderRefs();
+  checkCreateBtn();
 </script>
 
 </body>
