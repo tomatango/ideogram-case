@@ -46,6 +46,14 @@
       position: sticky;
       top: 0;
       height: 100vh;
+      transition: width 0.25s ease, min-width 0.25s ease, padding 0.25s ease;
+      overflow: hidden;
+    }
+
+    .sidebar.collapsed {
+      width: 64px;
+      min-width: 64px;
+      padding: 24px 12px;
     }
 
     .sidebar-logo {
@@ -53,6 +61,8 @@
       align-items: center;
       gap: 8px;
       margin-bottom: 32px;
+      overflow: hidden;
+      white-space: nowrap;
     }
 
     .sidebar-logo svg { color: var(--purple); flex-shrink: 0; }
@@ -62,13 +72,38 @@
       font-weight: 600;
       color: var(--text-primary);
       line-height: 1.2;
+      transition: opacity 0.2s, width 0.2s;
     }
 
     .sidebar-logo-sub {
       font-size: 0.65rem;
       color: var(--text-faint);
       font-weight: 400;
+      transition: opacity 0.2s;
     }
+
+    .sidebar.collapsed .sidebar-logo-text,
+    .sidebar.collapsed .sidebar-logo-sub { opacity: 0; width: 0; overflow: hidden; }
+
+    .sidebar-collapse-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      background: var(--input-bg);
+      border: 1px solid var(--border-hover);
+      border-radius: 8px;
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: color 0.15s, background 0.15s;
+      flex-shrink: 0;
+      align-self: flex-start;
+    }
+
+    .sidebar-collapse-btn:hover { color: var(--text-primary); background: var(--border-hover); }
+    .sidebar-collapse-btn svg { width: 14px; height: 14px; transition: transform 0.25s; }
+    .sidebar.collapsed .sidebar-collapse-btn svg { transform: rotate(180deg); }
 
     .sidebar-nav {
       display: flex;
@@ -89,7 +124,11 @@
       transition: background 0.15s;
       cursor: pointer;
       border: 1px solid transparent;
+      white-space: nowrap;
+      overflow: hidden;
     }
+
+    .sidebar.collapsed .nav-item { padding: 10px; justify-content: center; }
 
     .nav-item:hover { background: var(--input-bg); }
 
@@ -105,6 +144,16 @@
       gap: 12px;
     }
 
+    .nav-item-left svg { flex-shrink: 0; }
+
+    .nav-label {
+      transition: opacity 0.2s, width 0.2s;
+      overflow: hidden;
+    }
+
+    .sidebar.collapsed .nav-label { opacity: 0; width: 0; }
+    .sidebar.collapsed .soon-badge { display: none; }
+
     .soon-badge {
       font-size: 0.68rem;
       padding: 2px 8px;
@@ -112,6 +161,7 @@
       color: var(--text-faint);
       border-radius: 4px;
       border: 1px solid var(--border-hover);
+      flex-shrink: 0;
     }
 
     .sidebar-bottom { margin-top: auto; }
@@ -799,7 +849,17 @@
 <body>
 
   <!-- ── Sidebar ──────────────────────────────────────────────── -->
-  <aside class="sidebar">
+  <aside class="sidebar" id="sidebar">
+
+    <!-- Collapse toggle -->
+    <button class="sidebar-collapse-btn" onclick="toggleSidebar()" title="Toggle sidebar">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M15 18l-6-6 6-6"/>
+      </svg>
+    </button>
+
+    <div style="height:32px;flex-shrink:0"></div>
+
     <div class="sidebar-logo">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/>
@@ -818,7 +878,7 @@
             <path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72"/>
             <path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/><path d="M7 8H3"/><path d="M21 16h-4"/><path d="M11 3H9"/>
           </svg>
-          <span>Generate</span>
+          <span class="nav-label">Generate</span>
         </div>
       </a>
       <a class="nav-item">
@@ -827,7 +887,7 @@
             <path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/>
             <path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
           </svg>
-          <span>Explore</span>
+          <span class="nav-label">Explore</span>
         </div>
         <span class="soon-badge">Soon</span>
       </a>
@@ -838,7 +898,7 @@
             <path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"/>
             <path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"/>
           </svg>
-          <span>My Images</span>
+          <span class="nav-label">My Images</span>
         </div>
         <span class="soon-badge">Soon</span>
       </a>
@@ -847,7 +907,7 @@
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
           </svg>
-          <span>Favorites</span>
+          <span class="nav-label">Favorites</span>
         </div>
         <span class="soon-badge">Soon</span>
       </a>
@@ -860,7 +920,7 @@
             <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
             <circle cx="12" cy="12" r="3"/>
           </svg>
-          <span>Settings</span>
+          <span class="nav-label">Settings</span>
         </div>
       </a>
     </div>
@@ -1411,6 +1471,11 @@
       renderLogo();
     }
   });
+
+  // ── Sidebar collapse ─────────────────────────────────────────
+  function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('collapsed');
+  }
 
   // ── Enhance prompt ───────────────────────────────────────────
   let enhancedText = '';
