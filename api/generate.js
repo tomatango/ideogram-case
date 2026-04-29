@@ -22,9 +22,14 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: { message: 'API key not configured on server.' } });
   }
 
-  const { parts } = req.body;
+  const { parts, aspectRatio } = req.body;
   if (!parts || !Array.isArray(parts)) {
     return res.status(400).json({ error: { message: 'Invalid request body.' } });
+  }
+
+  const generationConfig = { responseModalities: ['TEXT', 'IMAGE'] };
+  if (aspectRatio) {
+    generationConfig.imageGenerationConfig = { aspectRatio };
   }
 
   const upstream = await fetch(
@@ -34,7 +39,7 @@ export default async function handler(req, res) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: [{ parts }],
-        generationConfig: { responseModalities: ['TEXT', 'IMAGE'] },
+        generationConfig,
       }),
     }
   );

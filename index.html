@@ -509,12 +509,55 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      height: 320px;
+      aspect-ratio: 1 / 1;
+      max-height: 420px;
       border: 2px dashed var(--border-hover);
       border-radius: 12px;
       background: rgba(39, 39, 42, 0.3);
       overflow: hidden;
+      transition: aspect-ratio 0.2s;
     }
+
+    /* ── Aspect ratio selector ───────────────────────────────────── */
+    .ratio-selector {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .ratio-btn {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 16px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s, background 0.15s;
+    }
+
+    .ratio-btn:hover { border-color: var(--border-hover); color: var(--text-primary); }
+
+    .ratio-btn.active {
+      border-color: var(--purple);
+      color: var(--purple);
+      background: rgba(168, 85, 247, 0.08);
+    }
+
+    .ratio-icon {
+      border: 2px solid currentColor;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    .ratio-icon.square  { width: 16px; height: 16px; }
+    .ratio-icon.stories { width: 10px; height: 18px; }
 
     .output-inner img {
       width: 100%; height: 100%;
@@ -1021,6 +1064,18 @@
       <!-- Error -->
       <div class="error" id="error"></div>
 
+      <!-- Aspect ratio selector -->
+      <div class="ratio-selector">
+        <button class="ratio-btn active" id="ratio-1-1" onclick="setRatio('1:1')">
+          <span class="ratio-icon square"></span>
+          Instagram Square (1:1)
+        </button>
+        <button class="ratio-btn" id="ratio-9-16" onclick="setRatio('9:16')">
+          <span class="ratio-icon stories"></span>
+          Instagram Stories (9:16)
+        </button>
+      </div>
+
       <!-- Generate button -->
       <div class="btn-create-wrap">
         <button class="btn-create" id="createBtn" onclick="generate()" disabled>
@@ -1153,8 +1208,19 @@
   const API_URL      = IS_LOCAL ? '/api/generate' : 'https://ideogram-case.vercel.app/api/generate';
   const API_TEXT_URL = IS_LOCAL ? '/api/text'     : 'https://ideogram-case.vercel.app/api/text';
 
-  let logoData  = null;
-  let refImages = [];
+  let logoData      = null;
+  let refImages     = [];
+  let selectedRatio = '1:1';
+
+  function setRatio(ratio) {
+    selectedRatio = ratio;
+    document.getElementById('ratio-1-1').classList.toggle('active', ratio === '1:1');
+    document.getElementById('ratio-9-16').classList.toggle('active', ratio === '9:16');
+    ['box1', 'box2'].forEach(id => {
+      const el = document.getElementById(id);
+      el.style.aspectRatio = ratio === '9:16' ? '9 / 16' : '1 / 1';
+    });
+  }
 
   // ── File reading ──────────────────────────────────────────────
   function readFileAsBase64(file) {
@@ -1389,9 +1455,21 @@
         partsRight.push({ text: 'Generate an image inspired by the style and aesthetic of these reference images.' + (logoData ? ' Incorporate the provided logo faithfully.' : '') });
       }
 
+      // Append aspect ratio instruction to both prompt sets
+      const ratioInstruction = selectedRatio === '9:16'
+        ? ' Generate the image in a vertical 9:16 aspect ratio, optimised for Instagram Stories.'
+        : ' Generate the image in a square 1:1 aspect ratio, optimised for Instagram posts.';
+      const addRatioHint = (parts) => {
+        const lastText = [...parts].reverse().find(p => p.text);
+        if (lastText) lastText.text += ratioInstruction;
+        else parts.push({ text: ratioInstruction });
+      };
+      addRatioHint(partsLeft);
+      addRatioHint(partsRight);
+
       const [res1, res2] = await Promise.all([
-        fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ parts: partsLeft }) }),
-        fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ parts: partsRight }) })
+        fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ parts: partsLeft,  aspectRatio: selectedRatio }) }),
+        fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ parts: partsRight, aspectRatio: selectedRatio }) })
       ]);
 
       const [data1, data2] = await Promise.all([res1.json(), res2.json()]);
