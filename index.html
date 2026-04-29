@@ -94,8 +94,16 @@
       color: #9aaac8;
     }
 
-    /* Logo zone */
-    .logo-zone { height: 150px; }
+    /* Logo card stretches to match the refs card height */
+    .logo-card {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .logo-zone {
+      flex: 1;
+      min-height: 150px;
+    }
 
     .logo-zone .preview-img {
       width: 100%;
@@ -103,7 +111,7 @@
       object-fit: contain;
       position: absolute;
       inset: 0;
-      padding: 10px;
+      padding: 16px;
     }
 
     .remove-btn {
@@ -261,6 +269,37 @@
     .btn-create:hover:not(:disabled) { background: #6b7fc6; }
     .btn-create:disabled { opacity: 0.6; cursor: not-allowed; }
 
+    .btn-brand-style {
+      margin-top: 10px;
+      width: 100%;
+      padding: 10px;
+      background: #7b8fd6;
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      font-size: 0.88rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s, opacity 0.2s;
+    }
+    .btn-brand-style:hover:not(:disabled) { background: #6b7fc6; }
+    .btn-brand-style:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .brand-style-text {
+      margin-top: 10px;
+      width: 100%;
+      min-height: 80px;
+      padding: 10px 12px;
+      background: #1e2235;
+      color: #c8d0e8;
+      border: 1px solid #2e3552;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      resize: vertical;
+      box-sizing: border-box;
+    }
+    .brand-style-text::placeholder { color: #5a6480; }
+
     .btn-regen {
       width: 100%;
       padding: 15px;
@@ -416,8 +455,8 @@
   <div class="upload-row">
 
     <!-- Logo card -->
-    <div class="card">
-      <div class="card-label">Upload Reference Logo</div>
+    <div class="card logo-card">
+      <div class="card-label">Step 1:<br>Upload Reference Logo</div>
       <div class="drop-zone logo-zone" id="logoZone">
         <input type="file" id="logoInput" accept="image/*" onchange="handleLogo(this)">
         <div class="dz-icon">
@@ -432,18 +471,20 @@
 
     <!-- References card -->
     <div class="card">
-      <div class="card-label">Upload References Images (Up to 5)</div>
+      <div class="card-label">Step 2 (Optional):<br>Create a Brand Style (Upload up to 5 Reference Images)</div>
       <input type="file" id="refsInput" accept="image/*" multiple style="display:none" onchange="handleRefs(this)">
       <div class="drop-zone refs-zone" id="refsZone" onclick="document.getElementById('refsInput').click()">
         <!-- rendered by JS -->
       </div>
+      <button class="btn-brand-style" id="brandStyleBtn" disabled onclick="generateBrandStyle()">Generate Brand Style Guide</button>
+      <textarea class="brand-style-text" id="brandStyleText" placeholder="The style guide is used to help us create images that better fit your brand."></textarea>
     </div>
 
   </div>
 
   <!-- Prompt card -->
   <div class="card prompt-card">
-    <div class="card-label">What kind of campaign would you like to make?</div>
+    <div class="card-label">Step 3:<br>Outline your idea here</div>
     <textarea id="prompt" placeholder="e.g.&#10;• Product shot of a new summer drink&#10;• Lifestyle photo for a back-to-school post&#10;• In-packaging shot of product on a shelf"></textarea>
   </div>
 
@@ -452,7 +493,7 @@
 
   <!-- Create button -->
   <div class="btn-create-wrap">
-    <button class="btn-create" id="createBtn" onclick="generate()">Create Images</button>
+    <button class="btn-create" id="createBtn" onclick="generate()">Step 4:<br>Create Images</button>
   </div>
 
   <!-- Output section -->
@@ -532,7 +573,7 @@
   }
   const IS_LOCAL = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
   const API_URL = IS_LOCAL ? '/api/generate' : 'https://ideogram-case.vercel.app/api/generate';
-  if (IS_LOCAL) document.getElementById('localApiBar').style.display = 'flex';
+  // API key is loaded server-side from .env.local via vercel dev — no manual entry needed
 
   let logoData  = null;
   let refImages = [];
@@ -603,6 +644,7 @@
   function renderRefs() {
     const zone  = document.getElementById('refsZone');
     const count = refImages.length;
+    document.getElementById('brandStyleBtn').disabled = count === 0;
 
     if (count === 0) {
       zone.classList.remove('has-images');
@@ -632,12 +674,44 @@
     }
   }
 
+  // ── Brand Style Guide ─────────────────────────────────────
+  async function generateBrandStyle() {
+    const btn      = document.getElementById('brandStyleBtn');
+    const textarea = document.getElementById('brandStyleText');
+    btn.disabled   = true;
+    btn.textContent = 'Generating...';
+    textarea.value  = '';
+
+    try {
+      const parts = refImages.map(img => ({
+        inlineData: { mimeType: img.mimeType, data: img.data }
+      }));
+      parts.push({ text: 'You are a professional marketing agent. Using the attached images, generate a short 5 to 10 word description of the brand style to be used as the brand style guide. Return this description as one line of text.' });
+
+      const res  = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ parts })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error?.message || `API error ${res.status}`);
+
+      const textPart = data.candidates?.[0]?.content?.parts?.find(p => p.text);
+      textarea.value = textPart?.text?.trim() ?? 'No response received.';
+    } catch (err) {
+      textarea.value = 'Error: ' + err.message;
+    } finally {
+      btn.disabled    = refImages.length === 0;
+      btn.textContent = 'Generate Brand Style Guide';
+    }
+  }
+
   // ── Generation ────────────────────────────────────────────
   function setLoading(loading) {
     const createBtn = document.getElementById('createBtn');
     const regenBtn  = document.getElementById('regenBtn');
     createBtn.disabled = loading;
-    createBtn.textContent = loading ? 'Generating...' : 'Create Images';
+    createBtn.innerHTML = loading ? 'Generating...' : 'Step 4:<br>Create Images';
     regenBtn.disabled = loading;
 
     if (loading) {
@@ -688,8 +762,7 @@
 
       parts.push({ text: augmentedPrompt });
 
-      const localKey = IS_LOCAL ? document.getElementById('localApiKey').value.trim() : null;
-      const body = JSON.stringify({ parts, ...(localKey && { apiKey: localKey }) });
+      const body = JSON.stringify({ parts });
 
       const [res1, res2] = await Promise.all([
         fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body }),
