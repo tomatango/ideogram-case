@@ -613,11 +613,18 @@
       pointer-events: none;
     }
 
-    /* ── Regenerate button ────────────────────────────────────── */
+    /* ── Regenerate row ───────────────────────────────────────── */
+    .regen-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 32px;
+    }
+
     .btn-regen {
-      display: block;
-      margin: 0 auto 32px;
-      padding: 10px 32px;
+      padding: 10px 20px;
       background: var(--input-bg);
       color: var(--text-secondary);
       border: 1px solid var(--border-hover);
@@ -632,6 +639,27 @@
     .btn-regen:hover:not(:disabled) {
       background: var(--border-hover);
       color: var(--text-primary);
+    }
+
+    .regen-divider {
+      width: 1px;
+      height: 24px;
+      background: var(--border);
+      flex-shrink: 0;
+    }
+
+    .btn-quick-edit {
+      padding: 10px 16px;
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: not-allowed;
+      font-family: inherit;
+      opacity: 0.6;
+      transition: background 0.2s, border-color 0.2s, color 0.2s, opacity 0.2s;
     }
 
     .btn-regen:disabled { opacity: 0.4; cursor: not-allowed; }
@@ -1038,6 +1066,28 @@
         </div>
       </div>
 
+      <!-- Caption overlay card (Step 4) -->
+      <div class="card" style="margin-bottom:24px">
+        <label class="card-label">
+          <span class="step-num">Step 4</span>
+          Caption Overlay
+          <span style="font-size:0.75rem;font-weight:400;color:var(--text-faint);margin-left:6px">(optional)</span>
+        </label>
+        <input
+          type="text"
+          id="captionOverlay"
+          maxlength="100"
+          placeholder="Add a caption to overlay on your images…"
+          style="width:100%;padding:10px 14px;background:var(--input-bg);border:1px solid var(--input-border);border-radius:8px;color:var(--text-primary);font-size:0.9rem;font-family:inherit;outline:none;transition:border-color 0.2s,box-shadow 0.2s"
+          onfocus="this.style.borderColor='var(--purple)';this.style.boxShadow='0 0 0 2px rgba(168,85,247,0.2)'"
+          onblur="this.style.borderColor='var(--input-border)';this.style.boxShadow='none'"
+          oninput="document.getElementById('captionCount').textContent=this.value.length+'/100'"
+        >
+        <div style="text-align:right;font-size:0.75rem;color:var(--text-faint);margin-top:4px">
+          <span id="captionCount">0/100</span>
+        </div>
+      </div>
+
       <!-- Enhance modal -->
       <div class="enhance-overlay" id="enhanceOverlay" onclick="closeEnhanceModal(event)">
         <div class="enhance-modal">
@@ -1136,8 +1186,31 @@
         </div>
       </div>
 
-      <!-- Regenerate button -->
-      <button class="btn-regen" id="regenBtn" onclick="generate()" disabled>Regenerate</button>
+      <!-- Regenerate + quick-edit row -->
+      <div class="regen-row">
+        <button class="btn-regen" id="regenBtn" onclick="generate()" disabled>Regenerate</button>
+        <div class="regen-divider"></div>
+        <button class="btn-quick-edit" id="btnSunnier"     disabled onclick="quickEdit('Make it a sunnier vibe')">☀️ Make it sunnier</button>
+        <button class="btn-quick-edit" id="btnMinimalist"  disabled onclick="quickEdit('Make it more minimalist')">◻ More minimalist</button>
+        <button class="btn-quick-edit" id="btnWider"       disabled onclick="quickEdit('Make it a wider angle shot')">⬌ Wider shot</button>
+        <button class="btn-quick-edit" id="customEditBtn" disabled onclick="toggleCustomEdit()">✏️ Custom Edit</button>
+      </div>
+
+      <!-- Custom edit input -->
+      <div id="customEditRow" style="display:none;justify-content:center;align-items:center;gap:8px;margin-top:-20px;margin-bottom:24px">
+        <input
+          type="text"
+          id="customEditInput"
+          maxlength="120"
+          placeholder="Describe your edit… e.g. "add a sunset background""
+          style="width:360px;max-width:100%;padding:9px 14px;background:var(--input-bg);border:1px solid var(--purple);border-radius:8px;color:var(--text-primary);font-size:0.875rem;font-family:inherit;outline:none;box-shadow:0 0 0 2px rgba(168,85,247,0.15)"
+        >
+        <button onclick="submitCustomEdit()" style="flex-shrink:0;display:flex;align-items:center;justify-content:center;width:34px;height:34px;background:var(--purple);border:none;border-radius:8px;cursor:pointer;transition:filter 0.15s" onmouseover="this.style.filter='brightness(1.15)'" onmouseout="this.style.filter='none'">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+          </svg>
+        </button>
+      </div>
 
       <!-- Model info -->
       <div class="model-info-bar">
@@ -1220,6 +1293,31 @@
       const el = document.getElementById(id);
       el.style.aspectRatio = ratio === '9:16' ? '9 / 16' : '1 / 1';
     });
+  }
+
+  let pendingEditSuffix = '';
+
+  function quickEdit(suffix) {
+    pendingEditSuffix = suffix;
+    generate();
+  }
+
+  function submitCustomEdit() {
+    const val = document.getElementById('customEditInput').value.trim();
+    if (!val) return;
+    pendingEditSuffix = `with the following edit: ${val}`;
+    generate();
+  }
+
+  function toggleCustomEdit() {
+    const row = document.getElementById('customEditRow');
+    const btn = document.getElementById('customEditBtn');
+    const open = row.style.display === 'flex';
+    row.style.display = open ? 'none' : 'flex';
+    btn.style.borderColor = open ? 'var(--border-hover)' : 'var(--purple)';
+    btn.style.color       = open ? 'var(--text-secondary)' : 'var(--purple)';
+    btn.style.background  = open ? 'transparent' : 'rgba(168,85,247,0.08)';
+    if (!open) document.getElementById('customEditInput').focus();
   }
 
   // ── File reading ──────────────────────────────────────────────
@@ -1405,6 +1503,7 @@
   async function generate() {
     const prompt     = document.getElementById('prompt').value.trim();
     const styleGuide = document.getElementById('brandStyleText').value.trim();
+    const caption    = document.getElementById('captionOverlay').value.trim();
     clearError();
     captureCurrentImages();
     setLoading(true);
@@ -1455,6 +1554,13 @@
         partsRight.push({ text: 'Generate an image inspired by the style and aesthetic of these reference images.' + (logoData ? ' Incorporate the provided logo faithfully.' : '') });
       }
 
+      // Append quick-edit / custom-edit suffix if set
+      if (pendingEditSuffix) {
+        partsLeft.push({ text: pendingEditSuffix });
+        partsRight.push({ text: pendingEditSuffix });
+        pendingEditSuffix = '';
+      }
+
       // Append aspect ratio instruction to both prompt sets
       const ratioInstruction = selectedRatio === '9:16'
         ? ' Generate the image in a vertical 9:16 aspect ratio, optimised for Instagram Stories.'
@@ -1466,6 +1572,13 @@
       };
       addRatioHint(partsLeft);
       addRatioHint(partsRight);
+
+      // Append caption overlay instruction if provided
+      if (caption) {
+        const captionInstruction = `Overlay the image with the following text as-is, without changes, in a dynamic format, typical of online ads: ${caption}`;
+        partsLeft.push({ text: captionInstruction });
+        partsRight.push({ text: captionInstruction });
+      }
 
       const [res1, res2] = await Promise.all([
         fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ parts: partsLeft,  aspectRatio: selectedRatio }) }),
@@ -1513,6 +1626,8 @@
       });
 
       document.getElementById('regenBtn').disabled = false;
+      document.getElementById('customEditBtn').disabled = false;
+      ['btnSunnier', 'btnMinimalist', 'btnWider'].forEach(id => document.getElementById(id).disabled = false);
       document.getElementById('creationsSubtitle').textContent = '2 variations generated';
 
     } catch (err) {
