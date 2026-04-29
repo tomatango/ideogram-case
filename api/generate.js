@@ -22,15 +22,12 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: { message: 'API key not configured on server.' } });
   }
 
-  const { parts, aspectRatio } = req.body;
+  const { parts } = req.body;
   if (!parts || !Array.isArray(parts)) {
     return res.status(400).json({ error: { message: 'Invalid request body.' } });
   }
 
   const generationConfig = { responseModalities: ['TEXT', 'IMAGE'] };
-  if (aspectRatio) {
-    generationConfig.imageGenerationConfig = { aspectRatio };
-  }
 
   const upstream = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent?key=${apiKey}`,
