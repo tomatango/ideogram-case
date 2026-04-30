@@ -1264,6 +1264,15 @@
           <div class="debug-prompt-label">⚙ Debug — Enhance Prompt</div>
           <textarea id="debugEnhancePrompt"></textarea>
         </div>
+        <div style="margin-top:12px">
+          <button id="ideasBtn" onclick="giveMeIdeas()" style="width:100%;padding:9px 14px;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--text-muted);font-size:0.82rem;font-weight:500;font-family:inherit;cursor:pointer;transition:border-color 0.15s,color 0.15s" onmouseover="this.style.borderColor='var(--border-hover)';this.style.color='var(--text-primary)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-muted)'">
+            💡 Give Me Ideas
+          </button>
+        </div>
+        <div id="ideasDisplay" style="display:none;margin-top:12px;padding:12px;background:rgba(168,85,247,0.06);border:1px solid rgba(168,85,247,0.2);border-radius:8px">
+          <div style="font-size:0.72rem;font-weight:700;color:var(--purple);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px">💡 Campaign Ideas</div>
+          <div id="ideasContent" style="font-size:0.875rem;color:var(--text-secondary);line-height:1.7"></div>
+        </div>
       </div>
 
       <!-- Caption overlay card (Step 4) -->
@@ -1373,6 +1382,9 @@
             </svg>
             Download
           </button>
+          <div style="margin-top:12px">
+            <button id="fcBtn1" style="width:100%;padding:9px 12px;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--text-muted);font-size:0.78rem;font-weight:500;font-family:inherit;cursor:not-allowed;opacity:0.5" disabled onclick="generateFullCampaign('brand')">🎯 Generate Full Campaign</button>
+          </div>
         </div>
         <div class="output-card">
           <p style="font-size:0.72rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px">Creative Input Interpretation</p>
@@ -1394,6 +1406,9 @@
             </svg>
             Download
           </button>
+          <div style="margin-top:12px">
+            <button id="fcBtn2" style="width:100%;padding:9px 12px;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--text-muted);font-size:0.78rem;font-weight:500;font-family:inherit;cursor:not-allowed;opacity:0.5" disabled onclick="generateFullCampaign('creative')">🎯 Generate Full Campaign</button>
+          </div>
         </div>
       </div>
 
@@ -1429,6 +1444,20 @@
         <div class="model-info-label" id="modelInfoLabel" style="display:none">
           <span>Image Gen Model: <strong id="modelImageName"></strong></span><br>
           <span>Brand Style Gen Model: <strong id="modelStyleName"></strong></span>
+        </div>
+      </div>
+
+      <!-- Full Campaign section -->
+      <div id="fullCampaignSection" style="display:none;margin-bottom:40px">
+        <div class="section-header">
+          <div class="section-title">Full Campaign</div>
+          <div class="section-subtitle" id="fullCampaignSubtitle"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div class="output-card" style="padding:16px"><div class="output-inner" id="fc1"><div class="spinner"></div></div></div>
+          <div class="output-card" style="padding:16px"><div class="output-inner" id="fc2"><div class="spinner"></div></div></div>
+          <div class="output-card" style="padding:16px"><div class="output-inner" id="fc3"><div class="spinner"></div></div></div>
+          <div class="output-card" style="padding:16px"><div class="output-inner" id="fc4"><div class="spinner"></div></div></div>
         </div>
       </div>
 
@@ -1654,6 +1683,110 @@
   function quickEdit(suffix) {
     pendingEditSuffix = suffix;
     generate();
+  }
+
+  // ── Full Campaign ─────────────────────────────────────────────
+  async function generateFullCampaign(side) {
+    const prompt     = document.getElementById('prompt').value.trim();
+    const styleGuide = document.getElementById('brandStyleText').value.trim();
+
+    const section  = document.getElementById('fullCampaignSection');
+    const subtitle = document.getElementById('fullCampaignSubtitle');
+    section.style.display = 'block';
+    subtitle.textContent  = side === 'brand' ? 'Based on Brand Safe Interpretation — generating 4 images…' : 'Based on Creative Input Interpretation — generating 4 images…';
+    ['fc1','fc2','fc3','fc4'].forEach(id => { document.getElementById(id).innerHTML = '<div class="spinner"></div>'; });
+    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    const buildParts = () => {
+      const parts = [];
+      if (logoData) parts.push({ inlineData: { mimeType: logoData.mimeType, data: logoData.data } });
+      refImages.forEach(img => parts.push({ inlineData: { mimeType: img.mimeType, data: img.data } }));
+
+      let txt;
+      if (side === 'brand') {
+        txt = 'Generate an image';
+        if (logoData) txt += ' that uses the attached logo';
+        txt += styleGuide ? ` following the brand style guide: ${styleGuide}` : ' following a cohesive brand aesthetic';
+      } else {
+        txt = `Generate an image based on this creative description: ${prompt || 'a compelling marketing visual'}`;
+        if (logoData) txt += ', incorporating the provided logo naturally';
+      }
+      parts.push({ text: txt });
+      return parts;
+    };
+
+    try {
+      const results = await Promise.all(
+        [1,2,3,4].map(() => fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ parts: buildParts(), model: debugImageModel })
+        }).then(r => r.json()))
+      );
+
+      results.forEach((data, i) => {
+        const box = document.getElementById(`fc${i+1}`);
+        const p   = data.candidates?.[0]?.content?.parts ?? [];
+        const img = p.find(p => p.inlineData?.mimeType?.startsWith('image/'));
+        if (img) {
+          const src = `data:${img.inlineData.mimeType};base64,${img.inlineData.data}`;
+          box.innerHTML = '';
+          const el = document.createElement('img');
+          el.src = src; el.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:10px;display:block';
+          box.appendChild(el);
+        } else {
+          box.innerHTML = '<span class="placeholder-text">Not available</span>';
+        }
+      });
+
+      subtitle.textContent = side === 'brand' ? 'Based on Brand Safe Interpretation' : 'Based on Creative Input Interpretation';
+    } catch (err) {
+      ['fc1','fc2','fc3','fc4'].forEach(id => { document.getElementById(id).innerHTML = `<span class="placeholder-text">Error: ${err.message}</span>`; });
+    }
+  }
+
+  // ── Give Me Ideas ─────────────────────────────────────────────
+  async function giveMeIdeas() {
+    const btn    = document.getElementById('ideasBtn');
+    const display = document.getElementById('ideasDisplay');
+    const content = document.getElementById('ideasContent');
+
+    btn.textContent = '💡 Generating ideas…';
+    btn.style.opacity = '0.6';
+    btn.disabled = true;
+    display.style.display = 'none';
+
+    try {
+      const prompt     = document.getElementById('prompt').value.trim();
+      const styleGuide = document.getElementById('brandStyleText').value.trim();
+      const parts = [];
+
+      if (logoData)         parts.push({ inlineData: { mimeType: logoData.mimeType, data: logoData.data } });
+      refImages.forEach(img => parts.push({ inlineData: { mimeType: img.mimeType, data: img.data } }));
+
+      let txt = 'You are an expert marketing professional. Using the';
+      if (logoData)          txt += ' logo,';
+      if (refImages.length)  txt += ' reference images,';
+      if (styleGuide)        txt += ` brand style guide: "${styleGuide}",`;
+      if (prompt)            txt += ` creative description: "${prompt}",`;
+      txt += ' come up with 3 different ideas of images to market this product. Keep the ideas between 5 to 10 words. Return the list in a simple jot note form.';
+      parts.push({ text: txt });
+
+      const res  = await fetch(API_TEXT_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ parts, model: debugTextModel }) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error?.message || `API error ${res.status}`);
+
+      const text = data.candidates?.[0]?.content?.parts?.find(p => p.text)?.text?.trim() ?? 'No ideas returned.';
+      content.innerHTML = text.replace(/\n/g, '<br>');
+      display.style.display = 'block';
+    } catch (err) {
+      content.innerHTML = `<span style="color:var(--text-faint)">Error: ${err.message}</span>`;
+      display.style.display = 'block';
+    } finally {
+      btn.textContent = '💡 Give Me Ideas';
+      btn.style.opacity = '1';
+      btn.disabled = false;
+    }
   }
 
   function submitCustomEdit() {
@@ -2015,6 +2148,11 @@
       document.getElementById('regenBtn').disabled = false;
       document.getElementById('customEditBtn').disabled = false;
       ['btnSunnier', 'btnMinimalist', 'btnWider'].forEach(id => document.getElementById(id).disabled = false);
+      ['fcBtn1', 'fcBtn2'].forEach(id => {
+        const btn = document.getElementById(id);
+        btn.disabled = false;
+        btn.style.cssText = btn.style.cssText.replace('cursor:not-allowed;opacity:0.5', 'cursor:pointer;opacity:1');
+      });
       document.getElementById('creationsSubtitle').textContent = '2 variations generated';
 
     } catch (err) {
