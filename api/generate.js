@@ -22,15 +22,16 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: { message: 'API key not configured on server.' } });
   }
 
-  const { parts } = req.body;
+  const { parts, model } = req.body;
   if (!parts || !Array.isArray(parts)) {
     return res.status(400).json({ error: { message: 'Invalid request body.' } });
   }
 
+  const imageModel = model || 'gemini-3.1-flash-image-preview';
   const generationConfig = { responseModalities: ['TEXT', 'IMAGE'] };
 
   const upstream = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent?key=${apiKey}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/${imageModel}:generateContent?key=${apiKey}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

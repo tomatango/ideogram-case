@@ -739,6 +739,70 @@
 
     .btn-regen:disabled { opacity: 0.4; cursor: not-allowed; }
 
+    /* ── Debug model selector panel ──────────────────────────── */
+    .debug-model-panel {
+      display: none;
+      background: rgba(245, 158, 11, 0.04);
+      border: 1px solid rgba(245, 158, 11, 0.22);
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 40px;
+    }
+
+    .debug-model-panel.visible { display: block; }
+
+    .debug-model-panel-title {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #f59e0b;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .debug-model-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .debug-model-row:last-child { margin-bottom: 0; }
+
+    .debug-model-row-label {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      min-width: 120px;
+      flex-shrink: 0;
+    }
+
+    .debug-model-btns {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .debug-model-btn {
+      padding: 5px 12px;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s, background 0.15s;
+    }
+
+    .debug-model-btn:hover { border-color: rgba(245,158,11,0.4); color: var(--text-primary); }
+
+    .debug-model-btn.active {
+      border-color: #f59e0b;
+      color: #f59e0b;
+      background: rgba(245, 158, 11, 0.08);
+    }
+
     /* ── Debug prompt boxes ───────────────────────────────────── */
     .debug-prompt-box {
       display: none;
@@ -1375,6 +1439,27 @@
         </div>
       </div>
 
+      <!-- Debug: model selector -->
+      <div class="debug-model-panel" id="debugModelPanel">
+        <div class="debug-model-panel-title">⚙ Debug — Model Selection</div>
+        <div class="debug-model-row">
+          <span class="debug-model-row-label">Image Generation</span>
+          <div class="debug-model-btns" id="imageModelBtns">
+            <button class="debug-model-btn active" onclick="setDebugImageModel('gemini-3.1-flash-image-preview', this)">gemini-3.1-flash-image-preview</button>
+            <button class="debug-model-btn" onclick="setDebugImageModel('gemini-2.0-flash-preview-image-generation', this)">gemini-2.0-flash-preview-image-generation</button>
+          </div>
+        </div>
+        <div class="debug-model-row">
+          <span class="debug-model-row-label">Text (Style / Enhance)</span>
+          <div class="debug-model-btns" id="textModelBtns">
+            <button class="debug-model-btn active" onclick="setDebugTextModel('gemini-2.5-flash', this)">gemini-2.5-flash</button>
+            <button class="debug-model-btn" onclick="setDebugTextModel('gemini-2.5-pro', this)">gemini-2.5-pro</button>
+            <button class="debug-model-btn" onclick="setDebugTextModel('gemini-2.5-flash-lite', this)">gemini-2.5-flash-lite</button>
+            <button class="debug-model-btn" onclick="setDebugTextModel('gemini-2.0-flash', this)">gemini-2.0-flash</button>
+          </div>
+        </div>
+      </div>
+
       <!-- History -->
       <div id="historySection" style="display:none">
         <div class="history-title">History</div>
@@ -1385,8 +1470,27 @@
   </main>
 
 <script>
-  const MODEL_IMAGE = 'gemini-3.1-flash-image-preview';
-  const MODEL_STYLE = 'gemini-2.5-flash';
+  const MODEL_IMAGE_DEFAULT = 'gemini-3.1-flash-image-preview';
+  const MODEL_STYLE_DEFAULT = 'gemini-2.5-flash';
+
+  // These are kept as consts for the "See Gen Model Used" display
+  const MODEL_IMAGE = MODEL_IMAGE_DEFAULT;
+  const MODEL_STYLE = MODEL_STYLE_DEFAULT;
+
+  let debugImageModel = MODEL_IMAGE_DEFAULT;
+  let debugTextModel  = MODEL_STYLE_DEFAULT;
+
+  function setDebugImageModel(model, btn) {
+    debugImageModel = model;
+    document.querySelectorAll('#imageModelBtns .debug-model-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
+  function setDebugTextModel(model, btn) {
+    debugTextModel = model;
+    document.querySelectorAll('#textModelBtns .debug-model-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
 
   function toggleModelInfo() {
     const label = document.getElementById('modelInfoLabel');
@@ -1520,6 +1624,7 @@
     document.getElementById('debugBrandStyleBox').classList.toggle('visible', on);
     document.getElementById('debugEnhanceBox').classList.toggle('visible', on);
     document.getElementById('debugCampaignBox').classList.toggle('visible', on);
+    document.getElementById('debugModelPanel').classList.toggle('visible', on);
     if (on) {
       document.getElementById('debugBrandStylePrompt').value = BRAND_STYLE_PROMPT;
       document.getElementById('debugEnhancePrompt').value    = buildEnhancePromptText();
@@ -1683,7 +1788,7 @@
       const res  = await fetch(API_TEXT_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ parts })
+        body: JSON.stringify({ parts, model: debugTextModel })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error?.message || `API error ${res.status}`);
@@ -1834,8 +1939,8 @@
       }
 
       const [res1, res2] = await Promise.all([
-        fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ parts: partsLeft,  aspectRatio: selectedRatio }) }),
-        fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ parts: partsRight, aspectRatio: selectedRatio }) })
+        fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ parts: partsLeft,  model: debugImageModel }) }),
+        fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ parts: partsRight, model: debugImageModel }) })
       ]);
 
       const [data1, data2] = await Promise.all([res1.json(), res2.json()]);
@@ -1957,7 +2062,7 @@
 
       parts.push({ text: promptText });
 
-      const res  = await fetch(API_TEXT_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ parts }) });
+      const res  = await fetch(API_TEXT_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ parts, model: debugTextModel }) });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error?.message || `API error ${res.status}`);
 
