@@ -645,7 +645,7 @@
     /* Download button */
     .download-btn {
       position: absolute;
-      bottom: 36px; right: 36px;
+      bottom: 12px; right: 12px;
       background: rgba(0,0,0,0.6);
       color: #fff;
       border: none;
@@ -667,7 +667,7 @@
 
     .img-gen-label {
       position: absolute;
-      bottom: 36px; left: 36px;
+      bottom: 12px; left: 12px;
       font-size: 0.75rem;
       font-style: italic;
       color: #fff;
@@ -1364,6 +1364,7 @@
       <div class="output-grid">
         <div class="output-card">
           <p style="font-size:0.72rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px">Brand Safe Interpretation</p>
+          <div style="position:relative">
           <div class="output-inner" id="box1">
             <div class="output-placeholder-icon">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -1382,12 +1383,14 @@
             </svg>
             Download
           </button>
+          </div>
           <div style="margin-top:12px">
             <button id="fcBtn1" style="width:100%;padding:9px 12px;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--text-muted);font-size:0.78rem;font-weight:500;font-family:inherit;cursor:not-allowed;opacity:0.5" disabled onclick="generateFullCampaign('brand')">🎯 Generate Full Campaign</button>
           </div>
         </div>
         <div class="output-card">
           <p style="font-size:0.72rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px">Creative Input Interpretation</p>
+          <div style="position:relative">
           <div class="output-inner" id="box2">
             <div class="output-placeholder-icon">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -1406,6 +1409,7 @@
             </svg>
             Download
           </button>
+          </div>
           <div style="margin-top:12px">
             <button id="fcBtn2" style="width:100%;padding:9px 12px;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--text-muted);font-size:0.78rem;font-weight:500;font-family:inherit;cursor:not-allowed;opacity:0.5" disabled onclick="generateFullCampaign('creative')">🎯 Generate Full Campaign</button>
           </div>
@@ -2151,7 +2155,10 @@
       ['fcBtn1', 'fcBtn2'].forEach(id => {
         const btn = document.getElementById(id);
         btn.disabled = false;
-        btn.style.cssText = btn.style.cssText.replace('cursor:not-allowed;opacity:0.5', 'cursor:pointer;opacity:1');
+        btn.style.cursor = 'pointer';
+        btn.style.opacity = '1';
+        btn.style.color = 'var(--text-secondary)';
+        btn.style.borderColor = 'var(--border-hover)';
       });
       document.getElementById('creationsSubtitle').textContent = '2 variations generated';
 
