@@ -1591,7 +1591,7 @@
     let txt = `You are an expert marketing professional. You are tasked with writing a prompt that can generate a professional grade promotional image based on this description: ${CI}`;
     if (BS) txt += `, the brand style guide: ${BS}`;
     if (refImages.length > 0) txt += `, and the reference images attached`;
-    txt += `. Ensure the logo is used on the product, and the caption overlay is layered on top of the image. Return only the image generation prompt as a single paragraph, with no preamble or explanation.`;
+    txt += `. Return only the image generation prompt as a single paragraph, with no preamble or explanation.`;
     return txt;
   }
 
