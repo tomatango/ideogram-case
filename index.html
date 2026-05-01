@@ -1997,6 +1997,11 @@
   }
 
   async function generate() {
+    // Clear any previously generated full campaign
+    const fcSection = document.getElementById('fullCampaignSection');
+    fcSection.style.display = 'none';
+    ['fc1','fc2','fc3','fc4'].forEach(id => { document.getElementById(id).innerHTML = '<div class="spinner"></div>'; });
+
     const prompt     = document.getElementById('prompt').value.trim();
     const styleGuide = document.getElementById('brandStyleText').value.trim();
     const caption    = document.getElementById('captionOverlay').value.trim();
