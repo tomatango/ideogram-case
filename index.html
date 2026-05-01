@@ -1617,8 +1617,8 @@
       }
       if (pendingEditSuffix) lines.push(pendingEditSuffix);
       const ratioInstruction = selectedRatio === '9:16'
-        ? 'Generate the image in a vertical 9:16 aspect ratio, optimised for Instagram Stories.'
-        : 'Generate the image in a square 1:1 aspect ratio, optimised for Instagram posts.';
+        ? 'Generate the image in a vertical 9:16 aspect ratio, optimised for Instagram Stories. Do not include any of the actual Instagram UI, just change the size of the image.'
+        : 'Generate the image in a square 1:1 aspect ratio, optimised for Instagram posts. Do not include any of the actual Instagram UI, just change the size of the image.';
       lines.push(ratioInstruction);
       if (caption) lines.push(`Overlay the image with the following text as-is, without changes, in a dynamic format, typical of online ads: {CAPTION: "${caption}"}`);
       return lines.join('\n\n');
@@ -1661,8 +1661,8 @@
     if (pendingEditSuffix) lines.push(pendingEditSuffix);
 
     const ratioInstruction = selectedRatio === '9:16'
-      ? `Generate the image in a vertical 9:16 aspect ratio, optimised for Instagram Stories.`
-      : `Generate the image in a square 1:1 aspect ratio, optimised for Instagram posts.`;
+      ? `Generate the image in a vertical 9:16 aspect ratio, optimised for Instagram Stories. Do not include any of the actual Instagram UI, just change the size of the image.`
+      : `Generate the image in a square 1:1 aspect ratio, optimised for Instagram posts. Do not include any of the actual Instagram UI, just change the size of the image.`;
     lines.push(ratioInstruction);
 
     if (caption) lines.push(`Overlay the image with the following text as-is, without changes, in a dynamic format, typical of online ads: {CAPTION: "${caption}"}`);
