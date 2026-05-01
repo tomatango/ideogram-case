@@ -2247,6 +2247,7 @@
 
       const textPart = data.candidates?.[0]?.content?.parts?.find(p => p.text);
       enhancedText = textPart?.text?.trim() ?? '';
+      if (enhancedText) enhancedText += ' Ensure the logo is used on the product, and the caption overlay is layered on top of the image.';
 
       body.className = 'enhance-modal-body loaded';
       body.innerHTML = `<p class="enhance-modal-text">${enhancedText.replace(/\n/g, '<br>')}</p>`;
